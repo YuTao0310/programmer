@@ -1,0 +1,1 @@
+memberSearchIndex = [{"p":"doc","c":"MyList","l":"contains(Object)","url":"contains(java.lang.Object)"},{"p":"doc","c":"MyList","l":"isEmpty()"},{"p":"doc","c":"MyList","l":"size()"}]
