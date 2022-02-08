@@ -1,9 +1,9 @@
-# find
+# `find`
 
 >  **<font color="red">注意：</font>**
 > linux中要表示符号的原义，需要加上转义符号`\`
 
-1、`find -exec {} \;`
+## 1、`find -exec {} \;`
 
 `{}`代替`find`结果，`\;`表示分号的作用。
 
@@ -13,7 +13,7 @@ find -name ".txt" -exec rm {} \;
 
 上述语句删除所有的txt文件
 
-2、`find -regex pattern`
+## 2、`find -regex pattern`
 
 ```shell
 find . \( -name "*.txt" -o -name "*.pdf" \)
