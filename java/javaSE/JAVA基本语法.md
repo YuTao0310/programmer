@@ -1140,6 +1140,8 @@ JAVA中String和8种基本类型所对应的类都没有实现clone方法。
 
 ![](./picture/HashMapPut.png)
 
+HashMap中判断是否为同一个key：1）首先判断hashCode值是否相同 2)然后调用equals判断是否相等。如果两者均相等，则认为是同一个key。
+
 ## 3、JAVA常量池
 
 参考链接：
@@ -1640,4 +1642,6 @@ SourceFile: "Test.java"
 ```
 
 ==ldc字节码==: 将常量值从常量池推送至栈顶
+
+​	`	`	`	`	`	`
 
