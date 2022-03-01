@@ -536,3 +536,393 @@ class Solution {
 
   ==<del>如果递归中使用全局变量，则为O(K);如果传递broad参数，则为O(KMN)</del>>==(即使传递broad参数，传递过程中使用的仍然是$O(K)$)
 
+# 剑指Offer30-包含main函数的栈
+
+定义栈的数据结构，请在该类型中实现一个能够得到栈的最小元素的 min 函数在该栈中，调用 min、push 及 pop 的时间复杂度都是 O(1)。
+
+示例：
+
+> MinStack minStack = new MinStack();
+> minStack.push(-2);
+> minStack.push(0);
+> minStack.push(-3);
+> minStack.min();   --> 返回 -3.
+> minStack.pop();
+> minStack.top();      --> 返回 0.
+> minStack.min();   --> 返回 -2。
+
+**法一（自己的）**
+
+`时间复杂度：O(1) 空间复杂度：O(n)`
+
+```java
+lass MinStack {
+        private LinkedList<Integer> list;
+        private LinkedList<Integer> minList;
+        public MinStack() {
+            list = new LinkedList<>();
+            minList = new LinkedList<>();
+        }
+        
+        public void push(int x) {
+            list.addFirst(x);
+            if (minList.isEmpty()) {
+                minList.addFirst(x);
+            } else {
+                int pre = minList.getFirst();
+                minList.addFirst(x > pre ? pre : x);
+            }
+        }
+         
+        public void pop() {
+            list.removeFirst();
+            minList.removeFirst();
+        }
+        
+        public int top() {
+            return list.getFirst();
+        }
+        
+        public int min() {
+            return minList.getFirst();
+        }
+    }
+```
+
+**法二**
+
+`时间复杂度：O(1) 空间复杂度：O(n)`
+
+法二与法一相比，两者复杂度量级相同，但法二实际占用的空间更少，因为其辅助栈所占用的空间更少。
+
+法一的辅助栈存储着每个元素在主栈中对应的最小值；法二的辅助栈
+
+```java
+class MinStack {
+    Stack<Integer> A, B;
+    public MinStack() {
+        A = new Stack<>();
+        B = new Stack<>();
+    }
+    public void push(int x) {
+        A.add(x);
+        if(B.empty() || B.peek() >= x)
+            B.add(x);
+    }
+    public void pop() {
+        if(A.pop().equals(B.peek())) //注意使用equals，而不是使用"==“符号
+            B.pop();
+    }
+    public int top() {
+        return A.peek();
+    }
+    public int min() {
+        return B.peek();
+    }
+}
+```
+
+# 剑指Offer31-栈的压入弹出序列
+
+输入两个整数序列，第一个序列表示栈的压入顺序，请判断第二个序列是否为该栈的弹出顺序。假设压入栈的所有数字均不相等。例如，序列 {1,2,3,4,5} 是某栈的压栈序列，序列 {4,5,3,2,1} 是该压栈序列对应的一个弹出序列，但 {4,3,5,1,2} 就不可能是该压栈序列的弹出序列。
+
+**法一（自己的）**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+法一直接构造一个辅助栈来模拟栈的压入和弹出过程。
+
+```java
+    class Solution {
+        private Stack<Integer> s = new Stack<>();
+        public boolean validateStackSequences(int[] pushed, int[] popped) {
+            int popIndex = 0;
+            int length = pushed.length;
+            if (length != popped.length) {
+                return false;
+            }
+            for (int i = 0; i < length; i++) {
+                s.push(pushed[i]);
+                while (!s.isEmpty() && s.peek() == popped[popIndex]) {
+                    popIndex++;
+                    s.pop();
+                }
+                if (popIndex == length) {
+                    return true;
+                }
+            }
+            return s.isEmpty() ? true : false; //直接"return s.isEmpty();"即可
+        }
+    }
+```
+
+**法二**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+法二只考虑数组长度相等的情况，没有考虑数组长度不相等的情况。从健壮性来说，法一比法二好。
+
+```java
+class Solution {
+    public boolean validateStackSequences(int[] pushed, int[] popped) {
+        Stack<Integer> stack = new Stack<>();
+        int i = 0;
+        for(int num : pushed) {
+            stack.push(num); // num 入栈
+            while(!stack.isEmpty() && stack.peek() == popped[i]) { // 循环判断与出栈
+                stack.pop();
+                i++;
+            }
+        }
+        return stack.isEmpty();
+    }
+}
+```
+
+# 剑指Offer32II-从上到下打印二叉树II
+
+从上到下按层打印二叉树，同一层的节点按从左到右的顺序打印，每一层打印到一行。
+
+ **法一(自己的)**
+
+`时间复杂度：O(n) 空间复杂度：O(logn)+O(n)=O(n)`
+
+广度优先遍历(BFS)
+
+```java
+       class Solution {
+        public List<List<Integer>> levelOrder(TreeNode root) {
+            if (root == null) {
+                return new LinkedList<>();
+            }
+            List<TreeNode> tmp = new LinkedList<>();
+            tmp.add(root);
+            return levelOrder(tmp);
+        }
+
+        List<List<Integer>> levelOrder(List<TreeNode> list) {
+            List<TreeNode> tmpList = new LinkedList<>();
+            List<List<Integer>> res = new LinkedList<>();
+            List<Integer> tmpRes = new LinkedList<>();
+
+            for (TreeNode node : list) {
+                tmpRes.add(node.val);
+                if (node.left != null) {
+                    tmpList.add(node.left);
+                }
+                if (node.right != null) {
+                    tmpList.add(node.right);
+                }
+            }
+            res.add(tmpRes);
+            if (!tmpList.isEmpty()) {
+                res.addAll(levelOrder(tmpList));
+            }
+            return res;
+        }
+    }
+```
+
+**法二 迭代写法**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+时间复杂度 O(N) ： N 为二叉树的节点数量，即 BFS 需循环 NN次。
+空间复杂度 O(N) ： 最差情况下，即当树为平衡二叉树时，最多有 N/2 个树节点同时在 queue 中，使用 O(N) 大小的额外空间。
+
+```java
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        Queue<TreeNode> queue = new LinkedList<>();
+        List<List<Integer>> res = new ArrayList<>();
+        if(root != null) queue.add(root);
+        while(!queue.isEmpty()) {
+            List<Integer> tmp = new ArrayList<>();
+            for(int i = queue.size(); i > 0; i--) {
+                TreeNode node = queue.poll();
+                tmp.add(node.val);
+                if(node.left != null) queue.add(node.left);
+                if(node.right != null) queue.add(node.right);
+            }
+            res.add(tmp);
+        }
+        return res;
+    }
+}
+
+```
+
+**法三 递归写法**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+==法三使用全局变量，法一法二没有使用全局变量==
+
+```java
+class Solution {
+    List<List<Integer>> node=new ArrayList();
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        lei(root,0);
+        return node;
+    }
+    public void lei(TreeNode root,int k){
+        if(root!=null){
+            if(node.size()<=k)node.add(new ArrayList());
+            node.get(k).add(root.val);
+            lei(root.left,k+1);
+            lei(root.right,k+1);
+        }
+    }
+}
+```
+
+# 剑指Offer32III-从上打印二叉树III
+
+请实现一个函数按照之字形顺序打印二叉树，即第一行按照从左到右的顺序打印，第二层按照从右到左的顺序打印，第三行再按照从左到右的顺序打印，其他行以此类推。
+
+**法一(自己的)-层序遍历+倒序**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+直接在原有基础上加上
+
+> `            for(int i=1;i<res.size();i+=2){
+>              Collections.reverse(res.get(i));
+>       }`
+
+```java
+class Solution {
+        public List<List<Integer>> levelOrder(TreeNode root) {
+            if (root == null) {
+                return new LinkedList<>();
+            }
+            List<TreeNode> tmp = new LinkedList<>();
+            tmp.add(root);
+            List<List<Integer>> res = levelOrder(tmp);
+            for(int i=1;i<res.size();i+=2){
+                Collections.reverse(res.get(i));
+            }
+            return res;
+        }
+
+        List<List<Integer>> levelOrder(List<TreeNode> list) {
+            List<TreeNode> tmpList = new LinkedList<>();
+            List<List<Integer>> res = new LinkedList<>();
+            List<Integer> tmpRes = new LinkedList<>();
+
+            for (TreeNode node : list) {
+                tmpRes.add(node.val);
+                if (node.left != null) {
+                    tmpList.add(node.left);
+                }
+                if (node.right != null) {
+                    tmpList.add(node.right);
+                }
+            }
+            res.add(tmpRes);
+            if (!tmpList.isEmpty()) {
+                res.addAll(levelOrder(tmpList));
+            }
+            return res;
+        }
+    }
+```
+
+**法二 层序遍历+双端队列**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+```java
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        Queue<TreeNode> queue = new LinkedList<>();
+        List<List<Integer>> res = new ArrayList<>();
+        if(root != null) queue.add(root);
+        while(!queue.isEmpty()) {
+            LinkedList<Integer> tmp = new LinkedList<>();
+            for(int i = queue.size(); i > 0; i--) {
+                TreeNode node = queue.poll();
+                if(res.size() % 2 == 0) tmp.addLast(node.val); // 偶数层 -> 队列头部
+                else tmp.addFirst(node.val); // 奇数层 -> 队列尾部
+                if(node.left != null) queue.add(node.left);
+                if(node.right != null) queue.add(node.right);
+            }
+            res.add(tmp);
+        }
+        return res;
+    }
+}
+
+```
+
+**法三 层序遍历+双端队列(奇偶逻辑层分离)**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+- 方法二代码简短、容易实现；但需要判断每个节点的所在层奇偶性，即冗余了 N*N 次判断。
+- 通过将奇偶层逻辑拆分，可以消除冗余的判断。
+
+```java
+class Solution {
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        Deque<TreeNode> deque = new LinkedList<>();
+        List<List<Integer>> res = new ArrayList<>();
+        if(root != null) deque.add(root);
+        while(!deque.isEmpty()) {
+            // 打印奇数层
+            List<Integer> tmp = new ArrayList<>();
+            for(int i = deque.size(); i > 0; i--) {
+                // 从左向右打印
+                TreeNode node = deque.removeFirst();
+                tmp.add(node.val);
+                // 先左后右加入下层节点
+                if(node.left != null) deque.addLast(node.left);
+                if(node.right != null) deque.addLast(node.right);
+            }
+            res.add(tmp);
+            if(deque.isEmpty()) break; // 若为空则提前跳出
+            // 打印偶数层
+            tmp = new ArrayList<>();
+            for(int i = deque.size(); i > 0; i--) {
+                // 从右向左打印
+                TreeNode node = deque.removeLast();
+                tmp.add(node.val);
+                // 先右后左加入下层节点
+                if(node.right != null) deque.addFirst(node.right);
+                if(node.left != null) deque.addFirst(node.left);
+            }
+            res.add(tmp);
+        }
+        return res;
+    }
+}
+
+```
+
+**法四-递归写法**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+```java
+class Solution {
+    List<List<Integer>> node=new LinkedList();
+    public List<List<Integer>> levelOrder(TreeNode root) {
+        lei(root,0);
+        return node;
+    }
+    public void lei(TreeNode root,int k){
+        if(root!=null){
+            if(node.size()<=k)node.add(new ArrayList());
+            if (k % 2 == 0) {
+                node.get(k).add(root.val);
+            } else {
+                node.get(k).add(0, root.val);
+            }
+            
+            lei(root.left,k+1);
+            lei(root.right,k+1);
+        }
+    }
+}
+```
+
