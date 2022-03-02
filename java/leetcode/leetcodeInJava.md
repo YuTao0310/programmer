@@ -903,6 +903,8 @@ class Solution {
 
 `时间复杂度：O(n) 空间复杂度：O(n)`
 
+==结果是BFS的形式，但执行过程有点像DFS的递归过程。==
+
 ```java
 class Solution {
     List<List<Integer>> node=new LinkedList();
@@ -922,6 +924,268 @@ class Solution {
             lei(root.left,k+1);
             lei(root.right,k+1);
         }
+    }
+}
+```
+
+# **剑指Offer33-二叉搜索树的后序遍历序列
+
+输入一个整数数组，判断该数组是不是某二叉搜索树的后序遍历结果。如果是则返回 `true`，否则返回 `false`。假设输入的数组的任意两个数字都互不相同。
+
+ 参考以下这颗二叉搜索树：
+
+```
+     5
+    / \
+   2   6
+  / \
+ 1   3
+```
+
+**示例 1：**
+
+```
+输入: [1,6,3,2,5]
+输出: false
+```
+
+**示例 2：**
+
+```
+输入: [1,3,2,6,5]
+输出: true
+```
+
+**法一(自己的)**
+
+`时间复杂度：O(n^2) 空间复杂度；O(n)`
+
+```java
+    class Solution {
+        public boolean verifyPostorder(int[] postorder) {
+            return verifyPostorder(postorder, 0, postorder.length - 1);
+        }
+
+        public boolean verifyPostorder(int[] postorder, int start, int end) {
+            if (end <= start) {
+                return true;
+            }
+            int endValue = postorder[end];
+            if (postorder[end - 1] < endValue) {
+                for (int i = start; i < end - 1; i++) {
+                    if (postorder[i] > endValue) {
+                        return false;
+                    }
+                }
+                return verifyPostorder(postorder, start, end - 1);
+            } else {
+                for (int i = end - 2; i >= 0; i--) {
+                    if (postorder[i] < endValue) {
+                        for (int j = i - 1; j >= 0; j--) {
+                            if (postorder[j] > endValue) {
+                                return false;
+                            }
+                        }
+                        return verifyPostorder(postorder, start, i) && verifyPostorder(postorder, i + 1, end - 1);
+                    }
+                }
+                return verifyPostorder(postorder, start, end - 1);
+            }
+        }
+    }
+```
+
+**法二(递归分治)**
+
+`时间复杂度：O(n^2) 空间复杂度；O(n)(最坏) O(logn)(平均)`（类似于快排的平均空间复杂度为O(logn)、最坏空间复杂度为O(n)）
+
+法二思路跟法一思路相同，但代码更加简洁。
+
+时间复杂度 $O(N^2)$： 每次调用 recur(i,j)减去一个根节点，因此递归占用 O(N)；最差情况下（即当树退化为链表），每轮递归都需遍历树所有节点，占用 O(N)。
+空间复杂度 $O(N)$ ： 最差情况下（即当树退化为链表），递归深度将达到 N 。
+
+```java
+class Solution {
+    public boolean verifyPostorder(int[] postorder) {
+        return recur(postorder, 0, postorder.length - 1);
+    }
+    boolean recur(int[] postorder, int i, int j) {
+        if(i >= j) return true;
+        int p = i;
+        while(postorder[p] < postorder[j]) p++;
+        int m = p;
+        while(postorder[p] > postorder[j]) p++;
+        return p == j && recur(postorder, i, m - 1) && recur(postorder, m, j - 1);
+    }
+}
+```
+
+**法三(辅助单调栈)**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+复杂度分析：
+
+时间复杂度 $O(N)$ ： 遍历 postorder 所有节点，各节点均入栈 / 出栈一次，使用 O(N) 时间。
+空间复杂度 $O(N)$： 最差情况下，单调栈 stack存储所有节点，使用 O(N)额外空间。
+
+```java
+class Solution {
+    public boolean verifyPostorder(int[] postorder) {
+        Stack<Integer> stack = new Stack<>();
+        int root = Integer.MAX_VALUE;
+        for(int i = postorder.length - 1; i >= 0; i--) {
+            if(postorder[i] > root) return false;
+            while(!stack.isEmpty() && stack.peek() > postorder[i])
+            	root = stack.pop();
+            stack.add(postorder[i]);
+        }
+        return true;
+    }
+}
+```
+
+# **剑指Offer34-二叉树中和为某一值的路径
+
+给你二叉树的根节点 root 和一个整数目标和 targetSum ，找出所有 从根节点到叶子节点 路径总和等于给定目标和的路径。
+叶子节点 是指没有子节点的节点。
+
+示例 1：
+
+![img](https://assets.leetcode.com/uploads/2021/01/18/pathsumii1.jpg)
+
+```
+输入：root = [5,4,8,11,null,13,4,7,2,null,null,5,1], targetSum = 22
+输出：[[5,4,11,2],[5,8,4,5]]
+```
+
+**法一(自己的)**
+`时间复杂度：O(n) 空间复杂度：O(logn)最坏O(n)`
+
+```java
+class Solution {
+        List<List<Integer>> res = new LinkedList<>();
+        int sum = 0;
+
+        public List<List<Integer>> pathSum(TreeNode root, int target) {
+            findPath(root, target);
+            return res;
+        }
+
+        public boolean findPath(TreeNode root, int target) {
+            if (root != null){
+                if (target == root.val && root.left ==null && root.right == null) {
+                    res.add(new LinkedList<>());
+                    res.get(sum).add(0, root.val);
+                    sum++;
+                    return true;
+                }
+                int tmp = sum;
+                boolean res1 = findPath(root.left, target - root.val);
+                if (res1) {
+                    for (int i = tmp; i < sum; i++) {
+                        res.get(i).add(0, root.val);
+                    }
+                }
+                tmp = sum;
+                boolean res2 = findPath(root.right, target - root.val);
+                if (res2) {
+                    for (int i = tmp; i < sum; i++) {
+                        res.get(i).add(0, root.val);
+                    }
+                }
+                return res1 || res2;
+            }
+            return false;
+        }
+    }
+```
+
+**法二深度优先+回溯**
+
+`时间复杂度：O(n) 空间复杂度：O(logn)最坏O(n)`
+
+先序遍历+路径记录
+
+法一是自底向顶记录，采用add(0, element)方式；法二是自顶向底记录，采用add(element)方式
+
+> 值得注意的是，记录路径时若直接执行 res.append(path) ，则是将 path 对象加入了 res ；后续 path 改变时， res 中的 path 对象也会随之改变。
+>
+> 正确做法：res.append(list(path)) ，相当于复制了一个 path 并加入到 res 。
+
+```java
+class Solution {
+    LinkedList<List<Integer>> res = new LinkedList<>();
+    LinkedList<Integer> path = new LinkedList<>(); 
+    public List<List<Integer>> pathSum(TreeNode root, int sum) {
+        recur(root, sum);
+        return res;
+    }
+    void recur(TreeNode root, int tar) {
+        if(root == null) return;
+        path.add(root.val);
+        tar -= root.val;
+        if(tar == 0 && root.left == null && root.right == null)
+            res.add(new LinkedList(path));
+        recur(root.left, tar);
+        recur(root.right, tar);
+        path.removeLast();
+    }
+}
+```
+
+**法三广度优先**
+
+`时间复杂度：O(n^2) 空间复杂度：O(n)`
+
+```java
+class Solution {
+    List<List<Integer>> ret = new LinkedList<List<Integer>>();
+    Map<TreeNode, TreeNode> map = new HashMap<TreeNode, TreeNode>();
+
+    public List<List<Integer>> pathSum(TreeNode root, int target) {
+        if (root == null) {
+            return ret;
+        }
+
+        Queue<TreeNode> queueNode = new LinkedList<TreeNode>();
+        Queue<Integer> queueSum = new LinkedList<Integer>();
+        queueNode.offer(root);
+        queueSum.offer(0);
+
+        while (!queueNode.isEmpty()) {
+            TreeNode node = queueNode.poll();
+            int rec = queueSum.poll() + node.val;
+
+            if (node.left == null && node.right == null) {
+                if (rec == target) {
+                    getPath(node);
+                }
+            } else {
+                if (node.left != null) {
+                    map.put(node.left, node);
+                    queueNode.offer(node.left);
+                    queueSum.offer(rec);
+                }
+                if (node.right != null) {
+                    map.put(node.right, node);
+                    queueNode.offer(node.right);
+                    queueSum.offer(rec);
+                }
+            }
+        }
+
+        return ret;
+    }
+
+    public void getPath(TreeNode node) {
+        List<Integer> temp = new LinkedList<Integer>();
+        while (node != null) {
+            temp.add(node.val);
+            node = map.get(node);
+        }
+        Collections.reverse(temp);
+        ret.add(new LinkedList<Integer>(temp));
     }
 }
 ```
