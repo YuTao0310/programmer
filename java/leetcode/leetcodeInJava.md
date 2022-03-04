@@ -1,3 +1,406 @@
+# 剑指offer03-数组中重复的数字
+
+找出数组中重复的数字。
+
+
+在一个长度为 n 的数组 nums 里的所有数字都在 0～n-1 的范围内。数组中某些数字是重复的，但不知道有几个数字重复了，也不知道每个数字重复了几次。请找出数组中任意一个重复的数字。
+
+**方法1：暴力搜索**
+
+`时间复杂度：O(n)~O(n^2) 空间复杂度：O(1)`
+
+**方法2：使用集合的思想**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+时间复杂度：O(n)。
+遍历数组一遍。使用哈希集合（HashSet），添加元素的时间复杂度为 O(1)，故总的时间复杂度是 O(n)。
+空间复杂度：O(n)。不重复的每个元素都可能存入集合，因此占用 O(n)额外空间。
+
+```java
+class Solution {
+    public int findRepeatNumber(int[] nums) {
+        Set<Integer> set = new HashSet<Integer>();
+        int repeat = -1;
+        for (int num : nums) {
+            if (!set.add(num)) {
+                repeat = num;
+                break;
+            }
+        }
+        return repeat;
+    }
+}
+```
+
+>hashset添加元素的时间复杂度为O(1)的原因：
+>
+>hashset通过内置的hashmap对象的put方法来添加元素，
+>
+>public boolean add(E e) {
+>
+>​    return map.put(e, PRESENT)==null;
+>
+>}
+>
+>而hashmap的put方法中，同样的key，后者的value会覆盖前者的value，从而实现key的不重合；而在寻找key的过程，根据key的hash值能够快速定位其位置，整个put过程的时间复杂度是O(1)。
+
+**方法3：原地交换**
+
+`时间复杂度：O(n) 空间复杂度O(1)`
+
+题目说明尚未被充分使用，即 在一个长度为 n 的数组 nums 里的所有数字都在 0 ~ n-1 的范围内 。 此说明含义：数组元素的 索引 和 值 是 一对多 的关系。
+因此，可遍历数组并通过交换操作，使元素的 索引 与 值 一一对应（即 nums[i] = inums[i]=i ）。因而，就能通过索引映射对应的值，起到与字典等价的作用。
+
+![Picture0.png](https://pic.leetcode-cn.com/1618146573-bOieFQ-Picture0.png)
+
+遍历中，第一次遇到数字 x 时，将其交换至索引 x 处；而当第二次遇到数字 x 时，一定有 nums[x] = x，此时即可得到一组重复数字。
+
+**算法流程**：
+
+1. 遍历数组 nums ，设索引初始值为 i = 0;
+   1. 若 nums[i] = i： 说明此数字已在对应索引位置，无需交换，因此跳过；
+   2. 若 nums[nums[i]] = nums[i] ： 代表索引 nums[i]处和索引 ii处的元素值都为 nums[i]，即找到一组重复值，返回此值 nums[i]；
+   3. 否则： 交换索引为 i和 nums[i]的元素值，将此数字交换至对应索引位置。
+2. 若遍历完毕尚未返回，则返回 -1。
+
+```java
+class Solution {
+    public int findRepeatNumber(int[] nums) {
+        int i = 0;
+        while(i < nums.length) {
+            if(nums[i] == i) {
+                i++;
+                continue;
+            }
+            if(nums[nums[i]] == nums[i]) return nums[i];
+            int tmp = nums[i];
+            nums[i] = nums[tmp];
+            nums[tmp] = tmp;
+        }
+        return -1;
+    }
+}
+```
+
+# 剑指offer04-二维数组中的查找
+
+在一个 n * m 的二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个高效的函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。
+
+示例:
+
+现有矩阵 matrix 如下：
+
+[
+  [1,   4,  7, 11, 15],
+  [2,   5,  8, 12, 19],
+  [3,   6,  9, 16, 22],
+  [10, 13, 14, 17, 24],
+  [18, 21, 23, 26, 30]
+]
+给定 target = 5，返回 true。
+给定 target = 20，返回 false。
+
+**方法1：暴力搜索**
+
+果不考虑二维数组排好序的特点，则直接遍历整个二维数组的每一个元素，判断目标值是否在二维数组中存在。
+
+依次遍历二维数组的每一行和每一列。如果找到一个元素等于目标值，则返回 true。如果遍历完毕仍未找到等于目标值的元素，则返回 false
+
+`时间复杂度：O(n·m) 空间复杂度：O(1)`
+
+**方法2：类似于一维分块搜索**
+
+当每一行对应的子数组的第一个元素值小于`target`时，对字数组进行二分搜索。
+
+`时间复杂度：O(n·log2(m)) 空间复杂度：O(1)或者O(log2(n))[递归实现二分法]`
+
+```java
+class Solution {
+ 
+        public boolean findNumberIn2DArray(int[][] matrix, int target) {
+            if (matrix.length == 0 || matrix[0].length == 0) {
+                return false;
+            }
+            
+            for (int i = 0; i < matrix.length; i++) {
+                if (matrix[i][0] > target) {
+                    break;
+                }
+                if (findNumberIn1DArray(matrix[i], target) == true) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public boolean findNumberIn1DArray(int[] matrix, int target) {
+            int start = 0;
+            int end = matrix.length - 1;
+            while (start <= end) {
+                int mid = (start + end) / 2;
+                if (matrix[mid] < target) {
+                    start = mid + 1;
+                } else if (matrix[mid] > target) {
+                    end = mid - 1;
+                } else {
+                    return true;
+                }
+            }
+            return false;
+        }
+    } 
+```
+
+**方法3：类似于二叉树查找法**
+
+二维数组的右上角开始查找。如果当前元素等于目标值，则返回 true。如果当前元素大于目标值，则移到左边一列。如果当前元素小于目标值，则移到下边一行。
+
+可以证明这种方法不会错过目标值。如果当前元素大于目标值，说明当前元素的下边的所有元素都一定大于目标值，因此往下查找不可能找到目标值，往左查找可能找到目标值。如果当前元素小于目标值，说明当前元素的左边的所有元素都一定小于目标值，因此往左查找不可能找到目标值，往下查找可能找到目标值。
+
+`时间复杂度：O(n+m) 空间复杂度：O(1)`
+
+```java
+class Solution {
+        public boolean findNumberIn2DArray(int[][] matrix, int target) {
+            if (matrix.length == 0 || matrix[0].length == 0) {
+                return false;
+            }
+            int x = 0;
+            int y = matrix[0].length - 1;
+            while (!(x == matrix.length || y == -1)) {
+                if (matrix[x][y] == target) {
+                    return true;
+                } else if (matrix[x][y] < target) {
+                    x++;
+                } else {
+                    y--;
+                }
+            }
+            return false;
+        }
+    }
+```
+
+# 剑指offer05-替换空格
+
+请实现一个函数，把字符串 s 中的每个空格替换成"%20"。
+
+ 示例 1：
+
+> 输入：s = "We are happy."
+> 输出："We%20are%20happy."
+
+**法1(自己的)**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+空间复杂度是因为需要额外空间sb
+
+```java
+    class Solution {
+        public String replaceSpace(String s) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if (c == ' ') {
+                    sb.append("%20");
+                } else {
+                    sb.append(c);
+                }
+            }
+            return sb.toString();
+        }
+    }
+```
+
+**法二 原地修改**
+
+`时间复杂度：O(n) 空间复杂度：O(1)`
+
+原地扩展长度，不需要使用额外空间。
+
+```c++
+class Solution {
+public:
+    string replaceSpace(string s) {
+        int count = 0, len = s.size();
+        // 统计空格数量
+        for (char c : s) {
+            if (c == ' ') count++;
+        }
+        // 修改 s 长度
+        s.resize(len + 2 * count);
+        // 倒序遍历修改
+        for(int i = len - 1, j = s.size() - 1; i < j; i--, j--) {
+            if (s[i] != ' ')
+                s[j] = s[i];
+            else {
+                s[j - 2] = '%';
+                s[j - 1] = '2';
+                s[j] = '0';
+                j -= 2;
+            }
+        }
+        return s;
+    }
+};
+```
+
+# 剑指offer06-从尾到头打印链表
+
+输入一个链表的头节点，从尾到头反过来返回每个节点的值（用数组返回）。
+
+**示例 1：**
+
+```
+输入：head = [1,3,2]
+输出：[2,3,1]
+```
+
+**法一(自己的)**
+
+利用栈
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+时间复杂度：O(n)。正向遍历一遍链表，然后从栈弹出全部节点，等于又反向遍历一遍链表。
+空间复杂度：O(n)。额外使用一个栈存储链表中的每个节点。
+
+```java
+    class Solution {
+        public int[] reversePrint(ListNode head) {
+            Stack<Integer> s = new Stack<>();
+            int length = 0;
+            while(head != null) {
+                s.push(head.val);
+                head = head.next;
+                length++;
+            }
+            int[] reverseList = new int[length];
+            for (int i = 0; i < length; i++) {
+                reverseList[i] = s.pop();
+            }
+            return reverseList;
+        }
+    }
+```
+
+**法二(递归法)**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+递归实现链表反序。
+
+```java
+class Solution {
+    ArrayList<Integer> tmp = new ArrayList<Integer>();
+    public int[] reversePrint(ListNode head) {
+        recur(head);
+        int[] res = new int[tmp.size()];
+        for(int i = 0; i < res.length; i++)
+            res[i] = tmp.get(i);
+        return res;
+    }
+    void recur(ListNode head) {
+        if(head == null) return;
+        recur(head.next);
+        tmp.add(head.val);
+    }
+}
+
+```
+
+# **剑指offer07-重建二叉树
+
+输入某二叉树的前序遍历和中序遍历的结果，请构建该二叉树并返回其根节点。
+
+假设输入的前序遍历和中序遍历的结果中都不含重复的数字。
+
+示例1：
+
+![img](https://assets.leetcode.com/uploads/2021/02/19/tree.jpg)
+
+```
+Input: preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]
+Output: [3,9,20,null,null,15,7]
+```
+
+**法1(自己的)**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+```java
+    class Solution {
+        int[] preOrder;
+        int[] inOrder;
+        int pos = 0;
+        public TreeNode buildTree(int[] preorder, int[] inorder) {
+            if (preorder.length == 0) {
+                return null;
+            }
+            preOrder = preorder;
+            inOrder = inorder;
+            return buildTree(0, preorder.length);
+        }
+        private TreeNode buildTree(int start, int end) {
+            int rootValue = preOrder[pos++];
+            TreeNode root = new TreeNode(rootValue);
+            int leftStart = start;
+            int rightEnd = end;
+            int leftEnd = 0;
+            int rightStart = 0;
+            if ((end - start) == 1) {
+                root.left = null;                
+                root.right = null;
+            } else {
+                for (int i = start; i < end; i++) {
+                    if (inOrder[i] == rootValue) {
+                        leftEnd = i;
+                        rightStart = i + 1;
+                        break;
+                    }
+                }
+                root.left = (leftStart == leftEnd ? null : buildTree(leftStart, leftEnd));
+                root.right = (rightStart == rightEnd ? null : buildTree(rightStart, rightEnd));
+            }
+            return root;
+        }
+    }
+```
+
+**法二**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+使用HahsMap来进行查找，更快。
+
+时间复杂度O(N) ： 其中 N为树的节点数量。初始化 HashMap 需遍历 inorder ，占用 O(N) 。递归共建立 N 个节点，每层递归中的节点建立、搜索操作占用 O(1) ，因此使用 O(N) 时间。
+空间复杂度 O(N) ： HashMap 使用 O(N) 额外空间；最差情况下（输入二叉树为链表时），递归深度达到 N ，占用 O(N) 的栈帧空间；因此总共使用 O(N)空间。
+
+```java
+class Solution {
+    int[] preorder;
+    HashMap<Integer, Integer> dic = new HashMap<>();
+    public TreeNode buildTree(int[] preorder, int[] inorder) {
+        this.preorder = preorder;
+        for(int i = 0; i < inorder.length; i++)
+            dic.put(inorder[i], i);
+        return recur(0, 0, inorder.length - 1);
+    }
+    TreeNode recur(int root, int left, int right) {
+        if(left > right) return null;                          // 递归终止
+        TreeNode node = new TreeNode(preorder[root]);          // 建立根节点
+        int i = dic.get(preorder[root]);                       // 划分根节点、左子树、右子树
+        node.left = recur(root + 1, left, i - 1);              // 开启左子树递归
+        node.right = recur(root + i - left + 1, i + 1, right); // 开启右子树递归
+        return node;                                           // 回溯返回根节点
+    }
+}
+
+```
+
+
+
 # 剑指offer09-用两个栈实现队列
 
 用两个栈实现一个队列。队列的声明如下，请实现它的两个函数 appendTail 和 deleteHead ，分别完成在队列尾部插入整数和在队列头部删除整数的功能。(若队列中没有元素，deleteHead 操作返回 -1 )
@@ -220,189 +623,6 @@ static final int MOD = 1000000007;
     }
 ```
 
-# 剑指offer03-数组中重复的数字
-
-找出数组中重复的数字。
-
-
-在一个长度为 n 的数组 nums 里的所有数字都在 0～n-1 的范围内。数组中某些数字是重复的，但不知道有几个数字重复了，也不知道每个数字重复了几次。请找出数组中任意一个重复的数字。
-
-**方法1：暴力搜索**
-
-`时间复杂度：O(n)~O(n^2) 空间复杂度：O(1)`
-
-**方法2：使用集合的思想**
-
-`时间复杂度：O(n) 空间复杂度：O(n)`
-
-时间复杂度：O(n)。
-遍历数组一遍。使用哈希集合（HashSet），添加元素的时间复杂度为 O(1)，故总的时间复杂度是 O(n)。
-空间复杂度：O(n)。不重复的每个元素都可能存入集合，因此占用 O(n)额外空间。
-
-```java
-class Solution {
-    public int findRepeatNumber(int[] nums) {
-        Set<Integer> set = new HashSet<Integer>();
-        int repeat = -1;
-        for (int num : nums) {
-            if (!set.add(num)) {
-                repeat = num;
-                break;
-            }
-        }
-        return repeat;
-    }
-}
-```
-
->hashset添加元素的时间复杂度为O(1)的原因：
->
->hashset通过内置的hashmap对象的put方法来添加元素，
->
->  public boolean add(E e) {
->
->​    return map.put(e, PRESENT)==null;
->
->  }
->
->而hashmap的put方法中，同样的key，后者的value会覆盖前者的value，从而实现key的不重合；而在寻找key的过程，根据key的hash值能够快速定位其位置，整个put过程的时间复杂度是O(1)。
-
-**方法3：原地交换**
-
-`时间复杂度：O(n) 空间复杂度O(1)`
-
-题目说明尚未被充分使用，即 在一个长度为 n 的数组 nums 里的所有数字都在 0 ~ n-1 的范围内 。 此说明含义：数组元素的 索引 和 值 是 一对多 的关系。
-因此，可遍历数组并通过交换操作，使元素的 索引 与 值 一一对应（即 nums[i] = inums[i]=i ）。因而，就能通过索引映射对应的值，起到与字典等价的作用。
-
-![Picture0.png](https://pic.leetcode-cn.com/1618146573-bOieFQ-Picture0.png)
-
-遍历中，第一次遇到数字 x 时，将其交换至索引 x 处；而当第二次遇到数字 x 时，一定有 nums[x] = x，此时即可得到一组重复数字。
-
-**算法流程**：
-
-1. 遍历数组 nums ，设索引初始值为 i = 0;
-   1. 若 nums[i] = i： 说明此数字已在对应索引位置，无需交换，因此跳过；
-   2. 若 nums[nums[i]] = nums[i] ： 代表索引 nums[i]处和索引 ii处的元素值都为 nums[i]，即找到一组重复值，返回此值 nums[i]；
-   3. 否则： 交换索引为 i和 nums[i]的元素值，将此数字交换至对应索引位置。
-2. 若遍历完毕尚未返回，则返回 -1。
-
-```java
-class Solution {
-    public int findRepeatNumber(int[] nums) {
-        int i = 0;
-        while(i < nums.length) {
-            if(nums[i] == i) {
-                i++;
-                continue;
-            }
-            if(nums[nums[i]] == nums[i]) return nums[i];
-            int tmp = nums[i];
-            nums[i] = nums[tmp];
-            nums[tmp] = tmp;
-        }
-        return -1;
-    }
-}
-```
-
-# 剑指offer04-二维数组中的查找
-
-在一个 n * m 的二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个高效的函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。
-
-示例:
-
-现有矩阵 matrix 如下：
-
-[
-  [1,   4,  7, 11, 15],
-  [2,   5,  8, 12, 19],
-  [3,   6,  9, 16, 22],
-  [10, 13, 14, 17, 24],
-  [18, 21, 23, 26, 30]
-]
-给定 target = 5，返回 true。
-给定 target = 20，返回 false。
-
-**方法1：暴力搜索**
-
-果不考虑二维数组排好序的特点，则直接遍历整个二维数组的每一个元素，判断目标值是否在二维数组中存在。
-
-依次遍历二维数组的每一行和每一列。如果找到一个元素等于目标值，则返回 true。如果遍历完毕仍未找到等于目标值的元素，则返回 false
-
-`时间复杂度：O(n·m) 空间复杂度：O(1)`
-
-**方法2：类似于一维分块搜索**
-
-当每一行对应的子数组的第一个元素值小于`target`时，对字数组进行二分搜索。
-
-`时间复杂度：O(n·log2(m)) 空间复杂度：O(1)或者O(log2(n))[递归实现二分法]`
-
-```java
-class Solution {
- 
-        public boolean findNumberIn2DArray(int[][] matrix, int target) {
-            if (matrix.length == 0 || matrix[0].length == 0) {
-                return false;
-            }
-            
-            for (int i = 0; i < matrix.length; i++) {
-                if (matrix[i][0] > target) {
-                    break;
-                }
-                if (findNumberIn1DArray(matrix[i], target) == true) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        public boolean findNumberIn1DArray(int[] matrix, int target) {
-            int start = 0;
-            int end = matrix.length - 1;
-            while (start <= end) {
-                int mid = (start + end) / 2;
-                if (matrix[mid] < target) {
-                    start = mid + 1;
-                } else if (matrix[mid] > target) {
-                    end = mid - 1;
-                } else {
-                    return true;
-                }
-            }
-            return false;
-        }
-    } 
-```
-
-**方法3：类似于二叉树查找法**
-
-二维数组的右上角开始查找。如果当前元素等于目标值，则返回 true。如果当前元素大于目标值，则移到左边一列。如果当前元素小于目标值，则移到下边一行。
-
-可以证明这种方法不会错过目标值。如果当前元素大于目标值，说明当前元素的下边的所有元素都一定大于目标值，因此往下查找不可能找到目标值，往左查找可能找到目标值。如果当前元素小于目标值，说明当前元素的左边的所有元素都一定小于目标值，因此往左查找不可能找到目标值，往下查找可能找到目标值。
-
-`时间复杂度：O(n+m) 空间复杂度：O(1)`
-
-```java
-class Solution {
-        public boolean findNumberIn2DArray(int[][] matrix, int target) {
-            if (matrix.length == 0 || matrix[0].length == 0) {
-                return false;
-            }
-            int x = 0;
-            int y = matrix[0].length - 1;
-            while (!(x == matrix.length || y == -1)) {
-                if (matrix[x][y] == target) {
-                    return true;
-                } else if (matrix[x][y] < target) {
-                    x++;
-                } else {
-                    y--;
-                }
-            }
-            return false;
-        }
-    }
-```
-
 # 剑指Offer10II-青蛙跳台阶
 
 一只青蛙一次可以跳上1级台阶，也可以跳上2级台阶。求该青蛙跳上一个 n 级的台阶总共有多少种跳法。
@@ -493,7 +713,7 @@ class Solution {
     }
 ```
 
-# 剑指Offer12-矩阵中的路径
+# **剑指Offer12-矩阵中的路径
 
 给定一个 $m * n$ 二维字符网格 board 和一个字符串单词 word 。如果 word 存在于网格中，返回 true ；否则，返回 false 。
 
@@ -530,11 +750,132 @@ class Solution {
 
 > M,N 分别为矩阵行列大小， KK为字 符串 word 长度。
 
-* 时间复杂度 $O(3^KMN)$： 最差情况下，需要遍历矩阵中长度为 K 字符串的所有方案，时间复杂度为 $O(3^K)$；矩阵中共有 MNM个起点，时间复杂度为 $O(MN)$ 。方案数计算： 设字符串长度为 KK，搜索中每个字符有上、下、左、右四个方向可以选择，舍弃回头（上个字符）的方向，剩下 3种选择，因此方案数的复杂度为 $O(3^K)$。
+* 时间复杂度 $O(3^KMN)$： 最差情况下，需要遍历矩阵中长度为 K 字符串的所有方案，时间复杂度为 $O(3^K)$；矩阵中共有 MN个起点，时间复杂度为 $O(MN)$ 。方案数计算： 设字符串长度为 K，搜索中每个字符有上、下、左、右四个方向可以选择，舍弃回头（上个字符）的方向，剩下 3种选择，因此方案数的复杂度为 $O(3^K)$。
 
 * 空间复杂度 $O(K)$ ： 搜索过程中的递归深度不超过 K ，因此系统因函数调用累计使用的栈空间占用 $O(K)$（因为函数返回后，系统调用的栈空间会释放）。最坏情况下 $K = MN$ ，递归深度为 $MN$，此时系统栈使用 $O(MN)$的额外空间。
 
   ==<del>如果递归中使用全局变量，则为O(K);如果传递broad参数，则为O(KMN)</del>>==(即使传递broad参数，传递过程中使用的仍然是$O(K)$)
+
+**法一(自己的)**
+
+`时间复杂度：O(3^KMN) 空间复杂度：O(MN)`
+
+```java
+    class Solution {
+        int[][] track;
+        char[][] map;
+        String matchWord;
+        
+        public boolean exist(char[][] board, String word) {
+            if (board.length == 0 || board[0].length == 0 || word.equals("")) {
+                return false;
+            }
+            
+            char firstChar = word.charAt(0);
+            boolean state = false;
+            map = board;
+            matchWord = word;
+            for (int i = 0; i < board.length; i++) {
+                if (state == true) {
+                    break;
+                }
+                for (int j = 0; j < board[0].length; j++) {
+                    if (board[i][j] == firstChar) {
+                        track = new int[board.length][board[0].length];
+                        track[i][j] = 1;
+                        if (word.length() == 1) {
+                            state = true;
+                            break;
+                        }
+                        if (state =  move(i, j, 1)) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return state;
+        }
+   
+        public boolean move(int i, int j, int matchCount) {
+            if (canMove(i + 1, j, matchCount)) {
+                if (update(i + 1, j, matchCount)) {
+                    return true;
+                }
+            }
+            if (canMove(i - 1, j, matchCount)) {
+                if (update(i - 1, j, matchCount)) {
+                    return true;
+                }
+            }
+            if (canMove(i, j + 1, matchCount)) {
+                if (update(i, j + 1, matchCount)) {
+                    return true;
+                }
+            }
+            if (canMove(i, j - 1, matchCount)) {
+                if (update(i, j - 1, matchCount)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public boolean canMove(int i, int j, int matchCount) {
+            if (i < 0 || i >= map.length) {
+                return false;
+            }
+            if (j < 0 || j >= map[0].length) {
+                return false;
+            }
+            if (track[i][j] == 1) {
+                return false;
+            }
+            if (map[i][j] == matchWord.charAt(matchCount)) {
+                return true;
+            }
+            return false;
+        }
+        public boolean update(int i, int j, int matchCount) {
+            track[i][j] = 1;
+            if (++matchCount == matchWord.length() || move(i, j, matchCount)) {
+                return true;
+            }
+            track[i][j] = 0;
+            return false;
+        }
+    }
+```
+
+**法二(他人的)：DFS+回溯**
+
+`时间复杂度：O(3^KMN) 空间复杂度：O(MN)`
+
+法二相比法一，代码更加简短；而且没有使用额外的空间作为标记数组，直接在board上进行操作，更加能体现回溯的过程。
+
+```java
+class Solution {
+    public boolean exist(char[][] board, String word) {
+        char[] words = word.toCharArray();
+        for(int i = 0; i < board.length; i++) {
+            for(int j = 0; j < board[0].length; j++) {
+                if(dfs(board, words, i, j, 0)) return true;
+            }
+        }
+        return false;
+    }
+    boolean dfs(char[][] board, char[] word, int i, int j, int k) {
+        if(i >= board.length || i < 0 || j >= board[0].length || j < 0 || board[i][j] != word[k]) return false;
+        if(k == word.length - 1) return true;
+        board[i][j] = '\0';
+        boolean res = dfs(board, word, i + 1, j, k + 1) || dfs(board, word, i - 1, j, k + 1) || 
+                      dfs(board, word, i, j + 1, k + 1) || dfs(board, word, i , j - 1, k + 1);
+        board[i][j] = word[k];
+        return res;
+    }
+}
+
+```
+
+
 
 # 剑指Offer30-包含main函数的栈
 
@@ -1188,5 +1529,209 @@ class Solution {
         ret.add(new LinkedList<Integer>(temp));
     }
 }
+```
+
+# 剑指offer35-复杂链表的复制
+
+请实现 copyRandomList 函数，复制一个复杂链表。在复杂链表中，每个节点除了有一个 next 指针指向下一个节点，还有一个 random 指针指向链表中的任意节点或者 null。
+
+示例 1：
+
+![img](https://assets.leetcode-cn.com/aliyun-lc-upload/uploads/2020/01/09/e1.png)
+
+```
+输入：head = [[7,null],[13,0],[11,4],[10,2],[1,0]]
+输出：[[7,null],[13,0],[11,4],[10,2],[1,0]]
+```
+
+**法一(自己的)**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+```java
+    class Solution {
+        public Node copyRandomList(Node head) {
+            List<Node> list  = new ArrayList<>();
+            HashMap<Node, Integer> map = new HashMap<>();
+            Node pointer = head;
+            int i = 0;
+            while(pointer != null) {
+                Node n = new Node(pointer.val);
+                list.add(n);
+                map.put(pointer, i++);
+                pointer = pointer.next;
+            }
+            list.add(null);
+            map.put(null, i);
+            for (i = 0; i < list.size() - 1; i++) {
+                list.get(i).next = list.get(i + 1);
+                list.get(i).random = list.get(map.get(head.random));
+                head = head.next;
+            }
+            return list.get(0);
+            
+        }
+    }
+```
+
+**法二(哈希表)**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+- 时间复杂度 O(N) ：两轮遍历链表，使用 O(N) 时间。
+- 空间复杂度 O(N) ：哈希表 dic 使用线性大小的额外空间。
+
+法二相比法一少用了一个列表，更加节省空间。
+
+```java
+class Solution {
+    public Node copyRandomList(Node head) {
+        if(head == null) return null;
+        Node cur = head;
+        Map<Node, Node> map = new HashMap<>();
+        // 3. 复制各节点，并建立 “原节点 -> 新节点” 的 Map 映射
+        while(cur != null) {
+            map.put(cur, new Node(cur.val));
+            cur = cur.next;
+        }
+        cur = head;
+        // 4. 构建新链表的 next 和 random 指向
+        while(cur != null) {
+            map.get(cur).next = map.get(cur.next);
+            map.get(cur).random = map.get(cur.random);
+            cur = cur.next;
+        }
+        // 5. 返回新链表的头节点
+        return map.get(head);
+    }
+}
+
+```
+
+**法三(拼接+拆分)**
+
+`时间复杂度：O(n) 空间复杂度：O(1)`
+
+- 时间复杂度 O(N) ：三轮遍历链表，使用 O(N)*O*(*N*) 时间。
+- 空间复杂度 O(1)) ：节点引用变量使用常数大小的额外空间。
+
+```java
+class Solution {
+    public Node copyRandomList(Node head) {
+        if(head == null) return null;
+        Node cur = head;
+        // 1. 复制各节点，并构建拼接链表
+        while(cur != null) {
+            Node tmp = new Node(cur.val);
+            tmp.next = cur.next;
+            cur.next = tmp;
+            cur = tmp.next;
+        }
+        // 2. 构建各新节点的 random 指向
+        cur = head;
+        while(cur != null) {
+            if(cur.random != null)
+                cur.next.random = cur.random.next;
+            cur = cur.next.next;
+        }
+        // 3. 拆分两链表
+        cur = head.next;
+        Node pre = head, res = head.next;
+        while(cur.next != null) {
+            pre.next = pre.next.next;
+            cur.next = cur.next.next;
+            pre = pre.next;
+            cur = cur.next;
+        }
+        pre.next = null; // 单独处理原链表尾节点
+        return res;      // 返回新链表头节点
+    }
+}
+```
+
+
+
+# 剑指offer36-二叉搜索树与双向链表
+
+输入一棵二叉搜索树，将该二叉搜索树转换成一个排序的循环双向链表。要求不能创建任何新的节点，只能调整树中节点指针的指向。
+
+ 为了让您更好地理解问题，以下面的二叉搜索树为例：
+
+![img](https://assets.leetcode.com/uploads/2018/10/12/bstdlloriginalbst.png)
+
+我们希望将这个二叉搜索树转化为双向循环链表。链表中的每个节点都有一个前驱和后继指针。对于双向循环链表，第一个节点的前驱是最后一个节点，最后一个节点的后继是第一个节点。
+
+下图展示了上面的二叉搜索树转化成的链表。“head” 表示指向链表中有最小元素的节点。
+
+ ![img](https://assets.leetcode.com/uploads/2018/10/12/bstdllreturndll.png)
+
+特别地，我们希望可以就地完成转换操作。当转化完成以后，树中节点的左指针需要指向前驱，树中节点的右指针需要指向后继。还需要返回链表中的第一个节点的指针。
+
+**法一(自己的)**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+```java
+    class Solution {
+        List<Node> path = new ArrayList<>();
+        public Node treeToDoublyList(Node root) {
+            inOrderTraverse(root);
+            int length = path.size();
+            if (length == 0) {
+                return root;
+            }
+            if (length == 1) {
+                root.left = root;
+                root.right = root;
+            }
+            path.get(0).left = path.get(length - 1);
+            path.get(0).right = path.get(1);
+            path.get(length - 1).left = path.get(length - 2);
+            path.get(length - 1).right = path.get(0);
+            for (int i = 1; i < length - 2; i++) {
+                path.get(i).left = path.get(i - 1);
+                path.get(i).right = path.get(i + 1);
+            }
+            return path.get(0);
+            
+        }
+        void inOrderTraverse(Node root) {
+            if (root == null) {
+                return;
+            }
+            inOrderTraverse(root.left);
+            path.add(root);
+            inOrderTraverse(root.right);
+        }
+    }
+```
+
+**法二**
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+法二没有使用path全局变量，在中序遍历的过程中，就已经完成循环链表的创建。
+
+```java
+class Solution {
+    Node pre, head;
+    public Node treeToDoublyList(Node root) {
+        if(root == null) return null;
+        dfs(root);
+        head.left = pre;
+        pre.right = head;
+        return head;
+    }
+    void dfs(Node cur) {
+        if(cur == null) return;
+        dfs(cur.left);
+        if(pre != null) pre.right = cur;
+        else head = cur;
+        cur.left = pre;
+        pre = cur;
+        dfs(cur.right);
+    }
+}
+
 ```
 
