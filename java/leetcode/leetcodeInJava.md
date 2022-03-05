@@ -1732,6 +1732,318 @@ class Solution {
         dfs(cur.right);
     }
 }
+```
+
+# 剑指offer37-序列化二叉树
+
+请实现两个函数，分别用来序列化和反序列化二叉树。
+
+你需要设计一个算法来实现二叉树的序列化与反序列化。这里不限定你的序列 / 反序列化算法执行逻辑，你只需要保证一个二叉树可以被序列化为一个字符串并且将这个字符串反序列化为原始的树结构。
+
+下面三种方法：
+
+`时间复杂度：O(n) 空间复杂度：O(n)`
+
+**法一(自己的)**
+
+序列化与反序列化采用递归广度搜索实现。
+
+```java
+public class Codec {
+        // Encodes a tree to a single string.
+        public Integer[] serialize(TreeNode root) {
+            List<Integer> list = new ArrayList<>();
+            if (root == null) {
+                return new Integer[]{};
+            }
+            Queue<TreeNode> q = new LinkedList<>();
+            q.add(root);
+            while(!q.isEmpty()) {
+                TreeNode node = q.poll();
+                if (node == null) {
+                    list.add(null);
+                    continue;
+                }
+                list.add(node.val);
+                q.add(node.left);
+                q.add(node.right);
+            }   
+            /* 可以删除掉
+            for (int i = list.size() - 1; i >= 0; i--) {
+                if (list.get(i) == null) {
+                    list.remove(i);
+                } else {
+                    break;
+                }
+            }
+            */
+            Integer[] tmp = new Integer[list.size()];
+            return list.toArray(tmp);
+        }
+        // Decodes your encoded data to tree.
+        public TreeNode deserialize(Integer[] data) {
+            TreeNode head = null;
+            int length = data.length;
+            if (length == 0) {
+                return head;
+            }
+            Queue<TreeNode> q = new LinkedList<>();
+            head = new TreeNode(data[0]);
+            q.add(head);
+            int i = 1;
+            while(!q.isEmpty()) {
+                TreeNode node = q.poll();
+                if (i < length) {
+                    if (data[i] != null) {
+                        node.left = new TreeNode(data[i]);
+                        q.add(node.left);
+                    } 
+                    i++;
+                }
+                if (i < length) {
+                    if (data[i] != null) {
+                        node.right = new TreeNode(data[i]);
+                        q.add(node.right);
+                    } 
+                    i++;
+                }
+            }
+            return head;
+        }
+    }
+```
+
+**法二、层序遍历DFS**
+
+实际执行法一所用时间比法二少。
+
+```java
+public class Codec {
+    public String serialize(TreeNode root) {
+        if(root == null) return "[]";
+        StringBuilder res = new StringBuilder("[");
+        Queue<TreeNode> queue = new LinkedList<>() {{ add(root); }};
+        while(!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if(node != null) {
+                res.append(node.val + ",");
+                queue.add(node.left);
+                queue.add(node.right);
+            }
+            else res.append("null,");
+        }
+        res.deleteCharAt(res.length() - 1);
+        res.append("]");
+        return res.toString();
+    }
+
+    public TreeNode deserialize(String data) {
+        if(data.equals("[]")) return null;
+        String[] vals = data.substring(1, data.length() - 1).split(",");
+        TreeNode root = new TreeNode(Integer.parseInt(vals[0]));
+        Queue<TreeNode> queue = new LinkedList<>() {{ add(root); }};
+        int i = 1;
+        while(!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            if(!vals[i].equals("null")) {
+                node.left = new TreeNode(Integer.parseInt(vals[i]));
+                queue.add(node.left);
+            }
+            i++;
+            if(!vals[i].equals("null")) {
+                node.right = new TreeNode(Integer.parseInt(vals[i]));
+                queue.add(node.right);
+            }
+            i++;
+        }
+        return root;
+    }
+}
+```
+
+**法三、DFS**
+
+可以采用StringBuilder实现。
+
+```java
+public class Codec {
+    public String serialize(TreeNode root) {
+        return rserialize(root, "");
+    }
+  
+    public TreeNode deserialize(String data) {
+        String[] dataArray = data.split(",");
+        List<String> dataList = new LinkedList<String>(Arrays.asList(dataArray));
+        return rdeserialize(dataList);
+    }
+
+    public String rserialize(TreeNode root, String str) {
+        if (root == null) {
+            str += "None,";
+        } else {
+            str += str.valueOf(root.val) + ",";
+            str = rserialize(root.left, str);
+            str = rserialize(root.right, str);
+        }
+        return str;
+    }
+  
+    public TreeNode rdeserialize(List<String> dataList) {
+        if (dataList.get(0).equals("None")) {
+            dataList.remove(0);
+            return null;
+        }
+  
+        TreeNode root = new TreeNode(Integer.valueOf(dataList.get(0)));
+        dataList.remove(0);
+        root.left = rdeserialize(dataList);
+        root.right = rdeserialize(dataList);
+    
+        return root;
+    }
+}
 
 ```
 
+# **剑指offer38-字符串的排列
+
+输入一个字符串，打印出该字符串中字符的所有排列。
+
+你可以以任意顺序返回这个字符串数组，但里面不能有重复元素。
+
+**示例:**
+
+```
+输入：s = "abc"
+输出：["abc","acb","bac","bca","cab","cba"]
+```
+
+**法一(自己的)**
+
+```java
+class Solution {
+        public String[] permutation(String s) {
+            if (s.length() <= 1) {
+                return new String[]{s};
+            }
+            HashSet<String> set = new HashSet<>();
+            String[] post = permutation(s.substring(1));
+            int length = s.length();
+            String first = s.substring(0, 1);
+            for (String str : post) {
+                for (int i = 0; i < length - 1; i++) {
+                    set.add(str.substring(0, i) + first + str.substring(i, length - 1));
+                }
+                set.add(str + first);
+            }
+            String[] res = new String[set.size()];
+            return set.toArray(res);
+        }
+    }
+```
+
+
+
+**法二、回溯**
+
+时间复杂度 $O(N!N)$： N为字符串 s 的长度；时间复杂度和字符串排列的方案数成线性关系，方案数为$ N \times (N-1) \times (N-2) … \times  $，即复杂度为 $O(N!) $；字符串拼接操作 join() 使用 $O(N)$ ；因此总体时间复杂度为 $O(N!N)$。
+空间复杂度 $O(N^2)$： 全排列的递归深度为 N ，系统累计使用栈空间大小为 $O(N)$ ；递归中辅助 Set 累计存储的字符数量最多为 $N + (N-1) + ... + 2 + 1 = (N+1)N/2 $，即占用 $O(N^2)$的额外空间。
+
+执行速度比法一快得多。
+
+**终止条件**： 当 x = len(c) - 1 时，代表所有位已固定（最后一位只有 1 种情况），则将当前组合 c 转化为字符串并加入 res ，并返回；
+**递推参数**： 当前固定位 x ；
+**递推工作**： 初始化一个 Set ，用于排除重复的字符；将第 x 位字符与 i \in∈ [x, len(c)] 字符分别交换，并进入下层递归；
+**剪枝**： 若 c[i] 在 Set 中，代表其是重复字符，因此 “剪枝” ；
+将 c[i] 加入 Set ，以便之后遇到重复字符时剪枝；
+**固定字符**： 将字符 c[i] 和 c[x] 交换，即固定 c[i] 为当前位字符；
+**开启下层递归**： 调用 dfs(x + 1) ，即开始固定第 x + 1 个字符；
+**还原交换**： 将字符 c[i] 和 c[x] 交换（还原之前的交换）；
+
+```java
+class Solution {
+    List<String> res = new LinkedList<>();
+    char[] c;
+    public String[] permutation(String s) {
+        c = s.toCharArray();
+        dfs(0);
+        return res.toArray(new String[res.size()]);
+    }
+    void dfs(int x) {
+        if(x == c.length - 1) {
+            res.add(String.valueOf(c));      // 添加排列方案
+            return;
+        }
+        HashSet<Character> set = new HashSet<>();
+        for(int i = x; i < c.length; i++) {
+            if(set.contains(c[i])) continue; // 重复，因此剪枝
+            set.add(c[i]);
+            swap(i, x);                      // 交换，将 c[i] 固定在第 x 位
+            dfs(x + 1);                      // 开启固定第 x + 1 位字符
+            swap(i, x);                      // 恢复交换
+        }
+    }
+    void swap(int a, int b) {
+        char tmp = c[a];
+        c[a] = c[b];
+        c[b] = tmp;
+    }
+}
+```
+
+# 剑指Offer39-数组中出现次数超过一半的数字
+
+**法一**
+
+`时间复杂度：O(n) 空间复杂度:O(n)`
+
+```java
+class Solution {
+        public int majorityElement(int[] nums) {
+            HashMap<Integer, Integer> map = new HashMap<>();
+            if (nums.length <= 2) return nums[0];
+            int halfLength = nums.length / 2;
+            for (int i : nums) {
+                if (map.containsKey(i)) {
+                    int count = map.get(i) + 1;
+                    if (count > halfLength) {
+                        return i;
+                    }
+                    map.put(i, count);
+                } else {
+                    map.put(i, 1);
+                }
+            }
+            return -1;
+        }
+    }
+```
+
+**法二 摩尔投票法（最佳解法）**
+
+`时间复杂度：O(n) 空间复杂度:O(1)`
+
+设输入数组 nums 的众数为 x ，数组长度为 n 。
+
+推论一： 若记 众数 的票数为 +1 ，非众数 的票数为 -1 ，则一定有所有数字的 票数和 >0 。
+
+推论二： 若数组的前 a 个数字的 票数和 =0 ，则 数组剩余 (n-a)个数字的 票数和一定仍 >0 ，即后 (n-a)个数字的 众数仍为 x 。
+
+```java
+class Solution {
+    public int majorityElement(int[] nums) {
+        int x = 0, votes = 0;
+        for(int num : nums){
+            if(votes == 0) x = num;
+            votes += num == x ? 1 : -1;
+        }
+        return x;
+    }
+}
+```
+
+**法三 数组排序法**
+
+ 将数组 nums排序，**数组中点的元素** 一定为众数。
+
+`时间复杂度：看排序算法的类型 空间复杂度:看排序算法的类型`
