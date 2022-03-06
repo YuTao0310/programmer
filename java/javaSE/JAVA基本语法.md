@@ -508,6 +508,8 @@ List<Hero> h=new ArrayList<Hero>();      //(2)
 
 第一种形式用当前类作为引用类型，那么可以访问到ArrayList这个类中的所有公用方法。第二种形式，用ArrayList实现的接口List作为引用类型，那么通过list引用可以访问到接口中定义的方法。也就是说ArrayList这个类实现了List接口，除了要必须实现接口List中声明的方法外，还可以实现额外的一些方法。但是，第二种形式就无法调用的List接口以外的方法。 使用上，设计模式中有：“代码尽量依赖于抽象，不依赖于具体”。第一种形式就是依赖具体，第二种形式就是依赖于抽象。因为List是接口。代码依赖于抽象的好处是，代码可以方便替换。例如，代码List list = new ArrayList();下面通过list来操作集合。代码编写后发现集合使用的不准确，应该使用LinkedList，那么只要修改一行代码List list = new LinkedList();就可以，这行以后的代码不需要修改，因为List接口保证了调用的都是接口中的方法，而ArrayList与LinkedList都实现了List接口。而如果当时用ArrayList list = new ArrayList()这种形式的话，那么list访问到的就可能是ArrayList里独有的方法而非List接口中的方法。这样替换成LinkedList的时候就有可能需要修改很多的代码。
 
+## 整体框架
+
 ![java集合框架图](https://www.runoob.com/wp-content/uploads/2014/01/2243690-9cd9c896e0d512ed.gif)
 
 上图中Collection还包括Deque；Collections是集合框架的工具类，就像Arrays是数组的工具类一样。
@@ -519,6 +521,22 @@ Collections是一个独立元素的序列，这些元素都服从一条或多条
 Map是一组成对的值键对对象，允许用键来查找值。它允许我们使用一个对象来查找某个对象，也被称为关联数组，或者叫做字典。它主要包括HashMap类和TreeMap类。Map在实际开发中使用非常广，特别是HashMap，想象一下我们要保存一个对象中某些元素的值，如果我们在创建一个对象显得有点麻烦，这个时候我们就可以用上Map了，HashMap采用是所以查询的效率是比较高的，如果我们需要一个有序的我们就可以考虑使用TreeMap。
 
 ![集合框架体系](https://www.runoob.com/wp-content/uploads/2014/01/java-coll-2020-11-16.png)
+
+**PriorityQueue实现堆**
+
+> Priority queue represented as a balanced binary heap: the two
+>
+>  children of queue[n] are queue[2*n+1] and queue[2*(n+1)].  The
+>
+>  priority queue is ordered by comparator, or by the elements'
+>
+>  natural ordering, if comparator is null: For each node n in the
+>
+>  heap and each descendant d of n, n <= d.  The element with the
+>
+>   lowest value is in queue[0], assuming the queue is nonempty.
+
+## 关系与区别
 
 **ArrayList VS HashSet**
 
@@ -576,6 +594,96 @@ TreeSet： 从小到大排序
 
 ![分析HashMap性能卓越的原因](https://stepimagewm.how2j.cn/819.png)
 
+## 比较器
+
+方式一：
+
+使用Comparator。
+
+```java
+        //引入Comparator，指定比较的算法
+        Comparator<Hero> c = new Comparator<Hero>() {
+            @Override
+            public int compare(Hero h1, Hero h2) {
+                //按照hp进行排序
+                if(h1.hp>=h2.hp)
+                    return 1;  //正数表示h1比h2要大
+                else
+                    return -1;
+            }
+        };
+        Collections.sort(heros,c);
+```
+
+方式二：
+
+实现Comparable接口。
+
+```java
+public class Hero implements Comparable<Hero>{
+    public String name;
+    public float hp;
+       
+    public int damage;
+  
+    @Override
+    public int compareTo(Hero anotherHero) {
+        if(damage<anotherHero.damage)
+            return 1; 
+        else
+            return -1;
+    }
+}
+```
+
+# Lambda
+
+从匿名类慢慢演变为Lambda表达式。
+
+1. 匿名类的正常写法
+
+```java
+HeroChecker c1 = new HeroChecker() {
+    public boolean test(Hero h) {
+        return (h.hp>100 && h.damage<50);
+    }
+};
+```
+
+2. 把外面的壳子去掉，只保留方法参数和方法体，参数和方法间加上符号->。
+
+```java
+HeroChecker c2 = (Hero h) ->{
+	return h.hp>100 && h.damage<50;
+};
+```
+
+3. 把return和{}去掉
+
+```java
+HeroChecker c3 = (Hero h) ->h.hp>100 && h.damage<50;
+```
+
+4. 把 参数类型和圆括号去掉(只有一个参数的时候，才可以去掉圆括号)
+
+```java
+HeroChecker c4 = h ->h.hp>100 && h.damage<50;
+```
+
+5. 把c4作为参数传递进去
+
+```java
+filter(heros,c4);
+```
+
+6. 直接把表达式传递进去
+
+```java
+filter(heros, h -> h.hp > 100 && h.damage < 50);
+```
+
+
+
 # 泛型
 
 不使用泛型带来的问题
@@ -595,9 +703,33 @@ heroList 的泛型可能是APHero
 heroList 的泛型可能是ADHero
 所以 可以确凿的是，**从heroList取出来的对象，一定是可以转型成Hero的**
 
-但是，不能往里面放东西，因为
+但是，不能往里面放东西，但也不可以放Hero，因为
 放APHero就不满足<ADHero>
 放ADHero又不满足<APHero>
+
+```java
+    public static void main(String[] args) {
+          
+        ArrayList<APHero> apHeroList = new ArrayList<APHero>();
+        apHeroList.add(new APHero());
+         
+        ArrayList<? extends Hero> heroList = apHeroList;
+          
+        //? extends Hero 表示这是一个Hero泛型的子类泛型
+          
+        //heroList 的泛型可以是Hero
+        //heroList 的泛型可以使APHero
+        //heroList 的泛型可以使ADHero
+          
+        //可以确凿的是，从heroList取出来的对象，一定是可以转型成Hero的
+          
+        Hero h= heroList.get(0);
+          
+        //但是，不能往里面放东西
+        heroList.add(new ADHero()); //编译错误，因为heroList的泛型 有可能是APHero
+        heroList.add(new Hero()); //依然编译错误    
+    }
+```
 
 **super**
 
@@ -631,9 +763,15 @@ heroList的泛型可能是Object
 - **N** - Number（数值类型）
 - **？** - 表示不确定的 java 类型
 
+
+
 ## 泛型转换
 
 子类泛型无法转化为父类泛型，父类泛型无法转化为子类泛型。要想达到类似于子类与父类之间相互转换的效果，可以采用通配符的形式。
+
+## public void <T> show (T t)
+
+<T>表示传入参数有泛型T。
 
 # 继承
 

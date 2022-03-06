@@ -2047,3 +2047,371 @@ class Solution {
  将数组 nums排序，**数组中点的元素** 一定为众数。
 
 `时间复杂度：看排序算法的类型 空间复杂度:看排序算法的类型`
+
+# 剑指offer40-最小的k个数
+
+**法一(排序)**
+
+时间复杂度 $O(NlogN) $： 库函数、快排等排序算法的平均时间复杂度为 $O(NlogN)$ 。
+空间复杂度$ O(N)$ ： 快速排序的递归深度最好（平均）为 $O(logN)$ ，最差情况（即输入数组完全倒序）为$O(N)$。
+
+自己的：
+
+```java
+    class Solution {
+        public int[] getLeastNumbers(int[] arr, int k) {
+            int[] res = sort(arr);
+            return Arrays.copyOf(res, k);
+        }
+
+        public int[] sort(int[] sourceArray) {
+            // 对 arr 进行拷贝，不改变参数内容
+            int[] arr = Arrays.copyOf(sourceArray, sourceArray.length);
+    
+            return quickSort(arr, 0, arr.length - 1);
+        }
+    
+        private int[] quickSort(int[] arr, int left, int right) {
+            if (left < right) {
+                int partitionIndex = partition(arr, left, right);
+                quickSort(arr, left, partitionIndex - 1);
+                quickSort(arr, partitionIndex + 1, right);
+            }
+            return arr;
+        }
+    
+        private int partition(int[] arr, int left, int right) {
+            // 设定基准值（pivot）
+            int pivot = left;
+            int index = pivot + 1;
+            for (int i = index; i <= right; i++) {
+                if (arr[i] < arr[pivot]) {
+                    swap(arr, i, index);
+                    index++;
+                }
+            }
+            swap(arr, pivot, index - 1);
+            return index - 1;
+        }
+    
+        private void swap(int[] arr, int i, int j) {
+            int temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+    }
+```
+
+别人的
+
+```java
+class Solution {
+    public int[] getLeastNumbers(int[] arr, int k) {
+        quickSort(arr, 0, arr.length - 1);
+        return Arrays.copyOf(arr, k);
+    }
+    private void quickSort(int[] arr, int l, int r) {
+        // 子数组长度为 1 时终止递归
+        if (l >= r) return;
+        // 哨兵划分操作（以 arr[l] 作为基准数）
+        int i = l, j = r;
+        while (i < j) {
+            while (i < j && arr[j] >= arr[l]) j--;
+            while (i < j && arr[i] <= arr[l]) i++;
+            swap(arr, i, j);
+        }
+        swap(arr, i, l);
+        // 递归左（右）子数组执行哨兵划分
+        quickSort(arr, l, i - 1);
+        quickSort(arr, i + 1, r);
+    }
+    private void swap(int[] arr, int i, int j) {
+        int tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
+    }
+}
+
+```
+
+**法二（基于快速排序的分组）**
+
+> 本方法优化时间复杂度的本质是通过判断舍去了不必要的递归（哨兵划分）。
+
+* 时间复杂度 $O(N)$： 其中 N为数组元素数量；对于长度为 N 的数组执行哨兵划分操作的时间复杂度为 $O(N)$ ；每轮哨兵划分后根据 k和 i的大小关系选择递归，由于 i 分布的随机性，则向下递归子数组的平均长度为 $\frac{N}{2} $；因此平均情况下，哨兵划分操作一共有 $N + \frac{N}{2} + \frac{N}{4} + ... + \frac{N}{N} = \frac{N - \frac{1}{2}}{1 - \frac{1}{2}} = 2N - 1$（等比数列求和），即总体时间复杂度为 $O(N)$ 。
+* 空间复杂度 $O(\log N) $： 划分函数的平均递归深度为 $O(\log N)$ 。
+
+```java
+class Solution {
+    public int[] getLeastNumbers(int[] arr, int k) {
+        if (k >= arr.length) return arr;
+        return quickSort(arr, k, 0, arr.length - 1);
+    }
+    private int[] quickSort(int[] arr, int k, int l, int r) {
+        int i = l, j = r;
+        while (i < j) {
+            while (i < j && arr[j] >= arr[l]) j--;
+            while (i < j && arr[i] <= arr[l]) i++;
+            swap(arr, i, j);
+        }
+        swap(arr, i, l);
+        if (i > k) return quickSort(arr, k, l, i - 1);
+        if (i < k) return quickSort(arr, k, i + 1, r);
+        return Arrays.copyOf(arr, k);
+    }
+    private void swap(int[] arr, int i, int j) {
+        int tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
+    }
+}
+```
+
+**法三（堆）**
+
+我们用一个大根堆实时维护数组的前 k小值。首先将前 k 个数插入大根堆中，随后从第 k+1 个数开始遍历，如果当前遍历到的数比大根堆的堆顶的数要小，就把堆顶的数弹出，再插入当前遍历到的数。最后将大根堆里的数存入数组返回即可。
+
+时间复杂度：$O(n\log k)$，其中 n 是数组 arr 的长度。由于大根堆实时维护前 k小值，所以插入删除都是 $O(\log k)$ 的时间复杂度，最坏情况下数组里 n个数都会插入，所以一共需要 $O(n\log k)$ 的时间复杂度。
+
+空间复杂度：$O(k)$，因为大根堆里最多 k 个数。
+
+
+
+```java
+class Solution {
+    public int[] getLeastNumbers(int[] arr, int k) {
+        int[] vec = new int[k];
+        if (k == 0) { // 排除 0 的情况
+            return vec;
+        }
+        PriorityQueue<Integer> queue = new PriorityQueue<Integer>(new Comparator<Integer>() {
+            public int compare(Integer num1, Integer num2) {
+                return num2 - num1;
+            }
+        });
+        for (int i = 0; i < k; ++i) {
+            queue.offer(arr[i]);
+        }
+        for (int i = k; i < arr.length; ++i) {
+            if (queue.peek() > arr[i]) {
+                queue.poll();
+                queue.offer(arr[i]);
+            }
+        }
+        for (int i = 0; i < k; ++i) {
+            vec[i] = queue.poll();
+        }
+        return vec;
+    }
+}
+```
+
+
+
+**法四（数据范围有限直接计数排序）**
+
+`时间复杂度：O(n) 空间复杂度：O(m) m为数组长度`
+
+```java
+class Solution {
+    public int[] getLeastNumbers(int[] arr, int k) {
+        if (k == 0 || arr.length == 0) {
+            return new int[0];
+        }
+        // 统计每个数字出现的次数
+        int[] counter = new int[10001];
+        for (int num: arr) {
+            counter[num]++;
+        }
+        // 根据counter数组从头找出k个数作为返回结果
+        int[] res = new int[k];
+        int idx = 0;
+        for (int num = 0; num < counter.length; num++) {
+            while (counter[num]-- > 0 && idx < k) {
+                res[idx++] = num;
+            }
+            if (idx == k) {
+                break;
+            }
+        }
+        return res;
+    }
+}
+```
+
+# 剑指offer41-数据流中的中位数
+
+如何得到一个数据流中的中位数？如果从数据流中读出奇数个数值，那么中位数就是所有数值排序之后位于中间的数值。如果从数据流中读出偶数个数值，那么中位数就是所有数值排序之后中间两个数的平均值。
+
+例如，
+
+[2,3,4] 的中位数是 3
+
+[2,3] 的中位数是 (2 + 3) / 2 = 2.5
+
+设计一个支持以下两种操作的数据结构：
+
+void addNum(int num) - 从数据流中添加一个整数到数据结构中。
+double findMedian() - 返回目前所有元素的中位数。
+示例 1：
+
+```
+输入：["MedianFinder","addNum","addNum","findMedian","addNum","findMedian"]
+[[],[1],[2],[],[3],[]]
+输出：[null,null,null,1.50000,null,2.00000]示例 2：
+```
+
+示例2：
+
+```java
+输入：["MedianFinder","addNum","findMedian","addNum","findMedian"]
+[[],[2],[],[3],[]]
+输出：[null,null,2.00000,null,2.50000]
+```
+
+**法一(自己的 暴力排序法)**
+
+`插入数据：O(n) 查找中位数：O(1) 空间复杂度：O(n)`
+
+```java
+    class MedianFinder {
+
+        /** initialize your data structure here. */
+        private List<Integer> list;
+        public MedianFinder() {
+            list = new ArrayList<>(); 
+        }
+        
+        public void addNum(int num) {
+            int i ;
+            for (i = list.size() - 1; i >= 0; i--) {
+                if (list.get(i) < num) {
+                    break;
+                }
+            }
+            list.add(i + 1, num);
+        }
+        
+        public double findMedian() {
+            int length = list.size();
+            if (length % 2 == 1) {
+                return list.get(length / 2);
+            } else {
+                return (list.get(length / 2 - 1) + list.get(length / 2)) / 2.0;
+            }
+        }
+    }
+```
+
+**法二(堆法)**
+
+* 时间复杂度：
+  查找中位数 $O(1)$ ： 获取堆顶元素使用$ O(1)$时间；
+  添加数字 $O(\log N)$： 堆的插入和弹出操作使用$ O(\log N)$ 时间。
+
+* 空间复杂度 $O(N)$ ： 其中 N为数据流中的元素数量，小顶堆 A 和大顶堆 B 最多同时保存 N 个元素。
+
+```java
+class MedianFinder {
+    Queue<Integer> A, B;
+    public MedianFinder() {
+        A = new PriorityQueue<>(); // 小顶堆，保存较大的一半
+        B = new PriorityQueue<>((x, y) -> (y - x)); // 大顶堆，保存较小的一半
+    }
+    public void addNum(int num) {
+        if(A.size() != B.size()) {
+            A.add(num);
+            B.add(A.poll());
+        } else {
+            B.add(num);
+            A.add(B.poll());
+        }
+    }
+    public double findMedian() {
+        return A.size() != B.size() ? A.peek() : (A.peek() + B.peek()) / 2.0;
+    }
+}
+```
+
+# *剑指offer42-连续子数组的最大和
+
+输入一个整型数组，数组中的一个或连续多个整数组成一个子数组。求所有子数组的和的最大值。
+
+要求时间复杂度为O(n)。
+
+**示例1:**
+
+```
+输入: nums = [-2,1,-3,4,-1,2,1,-5,4]
+输出: 6
+解释: 连续子数组 [4,-1,2,1] 的和最大，为 6。
+```
+
+**法一(动态规划)**
+
+`时间复杂度：O(n) 空间复杂度：O(1)【直接在原数组上进行操作】`
+
+```java
+class Solution {
+    public int maxSubArray(int[] nums) {
+        int res = nums[0];
+        for(int i = 1; i < nums.length; i++) {
+            nums[i] += Math.max(nums[i - 1], 0);
+            res = Math.max(res, nums[i]);
+        }
+        return res;
+    }
+}
+```
+
+**法二(分治)**
+
+时间复杂度：假设我们把递归的过程看作是一颗二叉树的先序遍历，那么这颗二叉树的深度的渐进上界为 $O(\log n)$，这里的总时间相当于遍历这颗二叉树的所有节点，故总时间的渐进上界是 $O(\sum_{i=1}^{\log n} 2^{i-1})=O(n)$，故渐进时间复杂度为 $O(n)$。
+空间复杂度：递归会使用 $O(\log n)$ 的栈空间，故渐进空间复杂度为 $O(\log n)$。
+
+```java
+class Solution {
+    public class Status {
+        public int lSum, rSum, mSum, iSum;
+
+        public Status(int lSum, int rSum, int mSum, int iSum) {
+            this.lSum = lSum;
+            this.rSum = rSum;
+            this.mSum = mSum;
+            this.iSum = iSum;
+        }
+    }
+
+    public int maxSubArray(int[] nums) {
+        return getInfo(nums, 0, nums.length - 1).mSum;
+    }
+
+    public Status getInfo(int[] a, int l, int r) {
+        if (l == r) {
+            return new Status(a[l], a[l], a[l], a[l]);
+        }
+        int m = (l + r) >> 1;
+        Status lSub = getInfo(a, l, m);
+        Status rSub = getInfo(a, m + 1, r);
+        return pushUp(lSub, rSub);
+    }
+
+    public Status pushUp(Status l, Status r) {
+        int iSum = l.iSum + r.iSum;
+        int lSum = Math.max(l.lSum, l.iSum + r.lSum);
+        int rSum = Math.max(r.rSum, r.iSum + l.rSum);
+        int mSum = Math.max(Math.max(l.mSum, r.mSum), l.rSum + r.lSum);
+        return new Status(lSum, rSum, mSum, iSum);
+    }
+}
+```
+
+「方法二」相较于「方法一」来说，时间复杂度相同，但是因为使用了递归，并且维护了四个信息的结构体，运行的时间略长，空间复杂度也不如方法一优秀，而且难以理解。那么这种方法存在的意义是什么呢？
+
+对于这道题而言，确实是如此的。但是仔细观察「方法二」，它不仅可以解决区间 [0, n-1]，还可以用于解决任意的子区间 [l,r]的问题。如果我们把 [0, n-1] 分治下去出现的所有子区间的信息都用堆式存储的方式记忆化下来，即建成一颗真正的树之后，我们就可以在 $O(\log n)$的时间内求到任意区间内的答案，我们甚至可以修改序列中的值，做一些简单的维护，之后仍然可以在 $O(\log n)$ 的时间内求到任意区间内的答案，对于大规模查询的情况下，这种方法的优势便体现了出来。这棵树就是上文提及的一种神奇的数据结构——线段树。
+
+**法三(暴力遍历法)**
+
+`时间复杂度：O(n^2) 空间复杂度：O(1)`
+
+直接遍历各种可能性
