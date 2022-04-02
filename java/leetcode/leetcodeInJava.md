@@ -2415,3 +2415,134 @@ class Solution {
 `时间复杂度：O(n^2) 空间复杂度：O(1)`
 
 直接遍历各种可能性
+
+# 剑指Offer43-1~n整数中1出现的次数
+
+输入一个整数 n ，求1～n这n个整数的十进制表示中1出现的次数。
+
+例如，输入12，1～12这些整数中包含1 的数字有1、10、11和12，1一共出现了5次。
+
+**法一、自己的**
+
+`时间复杂度： 空间复杂度：`
+
+```java
+    class Solution {
+        public int countDigitOne(int n) {
+            int count = getCount(n);
+            return countDigitOne(n, count);
+        }
+        private int countDigitOne(int n, int count) {
+            if (n >= 1 && n < 10) {
+                return 1;
+            }
+            if (n == 0) {
+                return 0;
+            }
+            int mod  = (int)Math.pow(10, count - 1);
+            int firstDigit = n / mod;
+            int remainder = n % mod;
+            int count1 = count - 1;
+            int mod1 = mod;
+            while (remainder < mod1 / 10) {
+                count1--;
+                mod1 /= 10;
+            }
+            if (firstDigit == 1) {
+                return remainder + 1 +  countDigitOne(remainder, count1) + countDigitOne(mod- 1, count - 1);
+            } else {
+                return mod + countDigitOne(remainder, count - 1) + firstDigit * countDigitOne(mod - 1, count - 1);
+            }
+            
+        }
+        private int getCount(int n) {
+            int count = 0;
+            while (n > 0) {
+                n /= 10;
+                count++;
+            }
+            return count;
+        }
+    }
+```
+
+前者相比后者理论上消耗时间更少，因为必须要每次计算总位数。
+
+```java
+    class Solution {
+        public int countDigitOne(int n) {
+            if (n >= 1 && n < 10) {
+                return 1;
+            }
+            if (n == 0) {
+                return 0;
+            }
+            int count = getCount(n);
+            int mod  = (int)Math.pow(10, count - 1);
+            int firstDigit = n / mod;
+            int remainder = n % mod;
+            int count1 =getCount(remainder);
+            if (firstDigit == 1) {
+                return remainder + 1 +  countDigitOne(remainder) + countDigitOne(mod- 1);
+            } else {
+                return mod + countDigitOne(remainder) + firstDigit * countDigitOne(mod - 1);
+            }
+            
+        }
+        private int getCount(int n) {
+            int count = 0;
+            while (n > 0) {
+                n /= 10;
+                count++;
+            }
+            return count;
+        }
+    }
+```
+
+**法二、**
+
+时间复杂度$ O(\log n)$) ： 循环内的计算操作使用 $O(1)$ 时间；循环次数为数字 n的位数，即 $\log_{10}{n}$ ，因此循环使用$ O(\log n)$时间。
+空间复杂度 $O(1)$ ： 几个变量使用常数大小的额外空间。
+
+```java
+class Solution {
+    public int countDigitOne(int n) {
+        int digit = 1, res = 0;
+        int high = n / 10, cur = n % 10, low = 0;
+        while(high != 0 || cur != 0) {
+            if(cur == 0) res += high * digit;
+            else if(cur == 1) res += high * digit + low + 1;
+            else res += (high + 1) * digit;
+            low += cur * digit;
+            cur = high % 10;
+            high /= 10;
+            digit *= 10;
+        }
+        return res;
+    }
+}
+
+```
+
+**法三**
+
+`时间复杂度：O(logn) 空间复杂度：O(1)`
+
+```java
+class Solution {
+    public int countDigitOne(int n) {
+        // mulk 表示 10^k
+        // 在下面的代码中，可以发现 k 并没有被直接使用到（都是使用 10^k）
+        // 但为了让代码看起来更加直观，这里保留了 k
+        long mulk = 1;
+        int ans = 0;
+        for (int k = 0; n >= mulk; ++k) {
+            ans += (n / (mulk * 10)) * mulk + Math.min(Math.max(n % (mulk * 10) - mulk + 1, 0), mulk);
+            mulk *= 10;
+        }
+        return ans;
+    }
+}
+```
+
