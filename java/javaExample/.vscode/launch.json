@@ -1,0 +1,133 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch test",
+            "request": "launch",
+            "mainClass": "test",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch MainWorkTest",
+            "request": "launch",
+            "mainClass": "test.MainWorkTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch JoinTest",
+            "request": "launch",
+            "mainClass": "test.JoinTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch InstrRearrTest1",
+            "request": "launch",
+            "mainClass": "test.InstrRearrTest1",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch InstrRearrTest",
+            "request": "launch",
+            "mainClass": "test.InstrRearrTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch InterruptTest",
+            "request": "launch",
+            "mainClass": "concurrent.InterruptTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch YieldTest",
+            "request": "launch",
+            "mainClass": "concurrent.YieldTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch Test",
+            "request": "launch",
+            "mainClass": "Test",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch NotInitialization",
+            "request": "launch",
+            "mainClass": "jvm.NotInitialization",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch TestClass",
+            "request": "launch",
+            "mainClass": "jvm.TestClass",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch JHSDB_TestCase",
+            "request": "launch",
+            "mainClass": "jvm.JHSDB_TestCase",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch javaGrammer",
+            "request": "launch",
+            "mainClass": "javaGrammer",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch ArrayListFailFast",
+            "request": "launch",
+            "mainClass": "ArrayListFailFast",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch GenericTest",
+            "request": "launch",
+            "mainClass": "generic.GenericTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch TreeNode",
+            "request": "launch",
+            "mainClass": "TreeNode",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "Launch javaGrammer",
+            "request": "launch",
+            "mainClass": "javaGrammer",
+            "projectName": "javaExample_ecc10e7"
+        },
+        {
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "launch html",
+            "file": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch java File",
+            "request": "launch",
+            "mainClass": "${file}",
+            "encoding": "UTF-8"
+        }
+    ]
+}
