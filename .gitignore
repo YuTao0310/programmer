@@ -1,0 +1,5 @@
+###
+pythonExample/**/*.pth
+pythonExample/**/__pycache__
+java/数据结构与算法/算法导论*
+java/java规范和书籍/*
