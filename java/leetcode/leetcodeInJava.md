@@ -6901,6 +6901,58 @@ class Solution {
 
 同剑指Offer42
 
+# Leetcode[54. 螺旋矩阵](https://leetcode.cn/problems/spiral-matrix/)
+
+给你一个 m 行 n 列的矩阵 matrix ，请按照 顺时针螺旋顺序 ，返回矩阵中的所有元素
+
+示例 1：
+
+输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]
+输出：[1,2,3,6,9,8,7,4,5]
+
+
+
+选择元素个数为判断条件
+
+```java
+class Solution {
+    public static List<Integer> spiralOrder(int[][] matrix) {
+        LinkedList<Integer> result = new LinkedList<>();
+        if(matrix==null||matrix.length==0) return result;
+        int left = 0;
+        int right = matrix[0].length - 1;
+        int top = 0;
+        int bottom = matrix.length - 1;
+        int numEle = matrix.length * matrix[0].length;
+        while (numEle >= 1) {
+            for (int i = left; i <= right && numEle >= 1; i++) {
+                result.add(matrix[top][i]);
+                numEle--;
+            }
+            top++;
+            for (int i = top; i <= bottom && numEle >= 1; i++) {
+                result.add(matrix[i][right]);
+                numEle--;
+            }
+            right--;
+            for (int i = right; i >= left && numEle >= 1; i--) {
+                result.add(matrix[bottom][i]);
+                numEle--;
+            }
+            bottom--;
+            for (int i = bottom; i >= top && numEle >= 1; i--) {
+                result.add(matrix[i][left]);
+                numEle--;
+            }
+            left++;
+        }
+        return result;
+    }
+}
+```
+
+
+
 # Leetcode[56. 合并区间](https://leetcode.cn/problems/merge-intervals/)
 
 以数组 intervals 表示若干个区间的集合，其中单个区间为 intervals[i] = [starti, endi] 。请你合并所有重叠的区间，并返回 一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间 。
@@ -7609,6 +7661,37 @@ class Solution {
             }
         }
         return ans;
+    }
+}
+```
+
+#  Leetcode[89. 格雷编码](https://leetcode.cn/problems/gray-code/)
+
+**n 位格雷码序列** 是一个由 `2n` 个整数组成的序列，其中：
+
+- 每个整数都在范围 `[0, 2n - 1]` 内（含 `0` 和 `2n - 1`）
+- 第一个整数是 `0`
+- 一个整数在序列中出现 **不超过一次**
+- 每对 **相邻** 整数的二进制表示 **恰好一位不同** ，且
+- **第一个** 和 **最后一个** 整数的二进制表示 **恰好一位不同**
+
+给你一个整数 `n` ，返回任一有效的 **n 位格雷码序列** 。
+
+==位运算==
+
+```java
+class Solution {
+    public List<Integer> grayCode(int n) {
+        List<Integer> res = new ArrayList<>(1 << n);
+        int lastSize = 1;
+        res.add(0, 0);
+        for (int i = 1; i <= n; i++) {
+            for (int j = 0; j < lastSize; j++) {
+                res.add(res.get(lastSize - j - 1) + lastSize);
+            }
+            lastSize <<= 1;        
+        }
+        return res;
     }
 }
 ```
