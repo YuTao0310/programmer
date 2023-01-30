@@ -6700,6 +6700,41 @@ class Solution {
 }
 ```
 
+# Leetcode[43. 字符串相乘](https://leetcode.cn/problems/multiply-strings/)
+
+给定两个以字符串形式表示的非负整数 num1 和 num2，返回 num1 和 num2 的乘积，它们的乘积也表示为字符串形式。
+
+注意：不能使用任何内置的 BigInteger 库或直接将输入转换为整数。
+
+```java
+class Solution {
+    public String multiply(String num1, String num2) {
+        if (num1.equals("0") || num2.equals("0")) {
+            return "0";
+        }
+        int[] res = new int[num1.length() + num2.length()];
+        for (int i = num1.length() - 1; i >= 0; i--) {
+            int n1 = num1.charAt(i) - '0';
+            for (int j = num2.length() - 1; j >= 0; j--) {
+                int n2 = num2.charAt(j) - '0';
+                int sum = (res[i + j + 1] + n1 * n2);
+                res[i + j + 1] = sum % 10;
+                res[i + j] += sum / 10;
+            }
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < res.length; i++) {
+            if (i == 0 && res[i] == 0) continue;
+            result.append(res[i]);
+        }
+        return result.toString();
+    }
+}
+```
+
+
+
 # Leetcode[46. 全排列](https://leetcode.cn/problems/permutations/)
 
 给定一个不含重复数字的数组 `nums` ，返回其 *所有可能的全排列* 。你可以 **按任意顺序** 返回答案。
@@ -6951,8 +6986,6 @@ class Solution {
 }
 ```
 
-
-
 # Leetcode[56. 合并区间](https://leetcode.cn/problems/merge-intervals/)
 
 以数组 intervals 表示若干个区间的集合，其中单个区间为 intervals[i] = [starti, endi] 。请你合并所有重叠的区间，并返回 一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间 。
@@ -6978,6 +7011,59 @@ class Solution {
     }
 }
 ```
+
+# Leetcode[59. 螺旋矩阵 II](https://leetcode.cn/problems/spiral-matrix-ii/)
+
+给你一个正整数 `n` ，生成一个包含 `1` 到 `n2` 所有元素，且元素按顺时针顺序螺旋排列的 `n x n` 正方形矩阵 `matrix` 。
+
+**示例 1：**
+
+![img](https://assets.leetcode.com/uploads/2020/11/13/spiraln.jpg)
+
+```java
+class Solution {
+    public int[][] generateMatrix(int n) {
+        int flag = n * n;
+        int left = -1, right = n - 1, top = 0, bottom = n - 1;
+        int temp = 1;
+        int[][] res = new int[n][n];
+        while (temp <= flag) {
+            for (int i = ++left; i <= right && temp <= flag; i++) res[top][i] = temp++;
+            for (int i = ++top; i <= bottom && temp <= flag; i++) res[i][right] = temp++;
+            for (int i = --right; i >= left && temp <= flag; i--) res[bottom][i] = temp++;
+            for (int i = --bottom; i >= top && temp <= flag; i--) res[i][left] = temp++;
+        }
+        return res;
+    }
+}
+```
+
+# Leetcode[61. 旋转链表](https://leetcode.cn/problems/rotate-list/)
+
+给你一个链表的头节点 `head` ，旋转链表，将链表每个节点向右移动 `k` 个位置
+
+```java
+class Solution {
+    public ListNode rotateRight(ListNode head, int k) {
+        if (head == null) return head;
+        int length = 1;
+        ListNode tail = head, res = null;
+        while (tail.next != null) {
+            length++;
+            tail = tail.next;
+        }
+        tail.next = head;
+        ListNode temp = head;
+        for (int i = 1; i < length - k % length; i++) temp = temp.next;
+        res = temp.next;
+        tail.next = head;
+        temp.next = null;
+        return res;
+    }
+}
+```
+
+
 
 # Leetcode110-[平衡二叉树](https://leetcode.cn/problems/balanced-binary-tree/description/)
 
