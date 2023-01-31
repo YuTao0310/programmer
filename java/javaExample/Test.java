@@ -1,11 +1,6 @@
-public class test {
+public class Test {
     public static void main(String[] args) {
-        t();
-        System.out.println("hhh");
-    }
-
-    private static void t() {
-        int a = 2 / 0;
-        int b = 2;
+        int[] a = {1, 2}, b = {3, 4};
+        System.out.println(a[0] + " " +  a[1]);
     }
 }

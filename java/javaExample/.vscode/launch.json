@@ -6,6 +6,34 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch Test",
+            "request": "launch",
+            "mainClass": "Test",
+            "projectName": "javaExample_917ce480"
+        },
+        {
+            "type": "java",
+            "name": "Launch VolatileTest1",
+            "request": "launch",
+            "mainClass": "juc.VolatileTest1",
+            "projectName": "javaExample_917ce480"
+        },
+        {
+            "type": "java",
+            "name": "Launch VolatileTest2",
+            "request": "launch",
+            "mainClass": "juc.VolatileTest2",
+            "projectName": "javaExample_917ce480"
+        },
+        {
+            "type": "java",
+            "name": "Launch VolatileTest",
+            "request": "launch",
+            "mainClass": "juc.VolatileTest",
+            "projectName": "javaExample_917ce480"
+        },
+        {
+            "type": "java",
             "name": "Launch test",
             "request": "launch",
             "mainClass": "test",
