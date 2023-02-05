@@ -10014,6 +10014,95 @@ class Solution {
 }
 ```
 
+# Leetcode [494. 目标和](https://leetcode.cn/problems/target-sum/)
+
+给你一个整数数组 `nums` 和一个整数 `target` 。
+
+向数组中的每个整数前添加 `'+'` 或 `'-'` ，然后串联起所有整数，可以构造一个 **表达式** ：
+
+- 例如，`nums = [2, 1]` ，可以在 `2` 之前添加 `'+'` ，在 `1` 之前添加 `'-'` ，然后串联起来得到表达式 `"+2-1"` 。
+
+返回可以通过上述方法构造的、运算结果等于 `target` 的不同 **表达式** 的数目。
+
+==回溯==
+
+```java
+class Solution {
+    int count = 0;
+
+    public int findTargetSumWays(int[] nums, int target) {
+        backtrack(nums, target, 0, 0);
+        return count;
+    }
+
+    public void backtrack(int[] nums, int target, int index, int sum) {
+        if (index == nums.length) {
+            if (sum == target) {
+                count++;
+            }
+        } else {
+            backtrack(nums, target, index + 1, sum + nums[index]);
+            backtrack(nums, target, index + 1, sum - nums[index]);
+        }
+    }
+}
+```
+
+==动态规划==
+
+```java
+class Solution {
+    public int findTargetSumWays(int[] nums, int target) {
+        int sum = 0;
+        for (int num : nums) {
+            sum += num;
+        }
+        int diff = sum - target;
+        if (diff < 0 || diff % 2 != 0) {
+            return 0;
+        }
+        int neg = diff / 2;
+        int[] dp = new int[neg + 1];
+        dp[0] = 1;
+        for (int num : nums) {
+            for (int j = neg; j >= num; j--) {
+                dp[j] += dp[j - num];
+            }
+        }
+        return dp[neg];
+    }
+}
+```
+
+# Leetcode [538. 把二叉搜索树转换为累加树](https://leetcode.cn/problems/convert-bst-to-greater-tree/)
+
+给出二叉 搜索 树的根节点，该树的节点值各不相同，请你将其转换为累加树（Greater Sum Tree），使每个节点 node 的新值等于原树中大于或等于 node.val 的值之和。
+
+提醒一下，二叉搜索树满足下列约束条件：
+
+节点的左子树仅包含键 小于 节点键的节点。
+节点的右子树仅包含键 大于 节点键的节点。
+左右子树也必须是二叉搜索树。
+
+```java
+class Solution {
+    int prev = 0;
+    public TreeNode convertBST(TreeNode root) {
+        dfs(root);
+        return root;
+    }
+
+    private void dfs(TreeNode root) {
+        if (root == null) return ;
+        dfs(root.right);
+        root.val = prev + root.val;
+        prev = root.val;
+        dfs(root.left);
+        
+    }
+}
+```
+
 
 
 # Leetcode[543. 二叉树的直径](https://leetcode.cn/problems/diameter-of-binary-tree/)
