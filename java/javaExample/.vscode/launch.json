@@ -6,6 +6,55 @@
     "configurations": [
         {
             "type": "java",
+            "name": "XunfeiTest",
+            "request": "launch",
+            "mainClass": "XunfeiTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "MeiTuanTest5",
+            "request": "launch",
+            "mainClass": "MeiTuanTest5",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "ZijieTest",
+            "request": "launch",
+            "mainClass": "ZijieTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "BaiduTest",
+            "request": "launch",
+            "mainClass": "BaiduTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "ScannerTest",
+            "request": "launch",
+            "mainClass": "ScannerTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "InterruptTest",
+            "request": "launch",
+            "mainClass": "multiplethread.InterruptTest",
+            "projectName": "javaExample_917ce480"
+        },
+        {
+            "type": "java",
+            "name": "ProducerConsumerTest",
+            "request": "launch",
+            "mainClass": "multiplethread.ProducerConsumerTest",
+            "projectName": "javaExample_917ce480"
+        },
+        {
+            "type": "java",
             "name": "Launch Test",
             "request": "launch",
             "mainClass": "Test",

@@ -228,6 +228,15 @@ nextIntz() 只会获取有效数字，不会获取空格或者换行。
 - 一个类只能继承一个类，但是可以实现多个接口。
 - 接口中的成员变量只能是 `public static final` 类型的，不能被修改且必须有初始值，而抽象类的成员变量默认 default，可在子类中被重新定义，也可被重新赋值。
 
+## 哈希冲突
+
+https://www.cnblogs.com/gongcheng-/p/10894205.html
+
+* 开放定址法
+* 链地址法
+* 再哈希法
+* 建立公共溢出区
+
 # JVM
 
 ## 即时编译和AOT
@@ -235,6 +244,60 @@ nextIntz() 只会获取有效数字，不会获取空格或者换行。
 见《深入理解Java虚拟机》11.1节
 
 # JUC
+
+## ReentrantLock公平锁和非公平锁
+
+**非公平锁和公平锁的两处不同：** 1. 非公平锁在调用 lock 后，首先就会调用 CAS 进行一次抢锁，如果这个时候恰巧锁没有被占用，那么直接就获取到锁返回了。
+
+1. 非公平锁在 CAS 失败后，和公平锁一样都会进入到 tryAcquire 方法，在 tryAcquire 方法中，如果发现锁这个时候被释放了（state == 0），非公平锁会直接 CAS 抢锁，但是公平锁会判断等待队列是否有线程处于等待状态，如果有则不去抢锁，乖乖排到后面。
+
+公平锁和非公平锁就这两点区别，如果这两次 CAS 都不成功，那么后面非公平锁和公平锁是一样的，都要进入到阻塞队列等待唤醒。
+
+相对来说，非公平锁会有更好的性能，因为它的吞吐量比较大。当然，非公平锁让获取锁的时间变得更加不确定，可能会导致在阻塞队列中的线程长期处于饥饿状态。
+
+https://zhuanlan.zhihu.com/p/45305463
+
+## 共享锁和排他锁
+
+**简要区别**
+
+- **共享锁**：一把锁可以被多个线程同时获得。又称为读锁。
+- **独占锁**：一把锁只能被一个线程获得。又称为写锁。
+
+**线程持有读锁还能持有写锁吗**
+
+同一线程下，
+
+* 在线程持有读锁的情况下，该线程不能取得写锁(因为获取写锁的时候，如果发现当前的读锁被占用，就马上获取失败，不管读锁是不是被当前线程持有)。
+
+* 在线程持有写锁的情况下，该线程可以继续获取读锁（获取读锁时如果发现写锁被占用，只有写锁没有被当前线程占用的情况才会获取失败）。
+
+不同线程下，
+
+线程A持有读锁，线程B可以持有读锁；线程B想持有写锁，要等线程A释放读锁才能获取成功。
+线程A持有写锁，线程B只有等线程A释放写锁才能获取读锁成功；线程B只有等线程A释放锁才能获取写锁成功。
+
+**读锁为什么不能升级为写锁**
+
+写锁可以降级为读锁，但是读锁却不能升级为写锁。这是因为读锁升级为写锁会引起线程的争夺，毕竟写锁属于是独占锁，这样的话，会影响性能。
+
+另外，还可能会有死锁问题发生。举个例子：假设两个线程的读锁都想升级写锁，则需要对方都释放自己锁，而双方都不释放，就会产生死锁。
+
+https://javaguide.cn/java/concurrent/java-concurrent-questions-02.html#reentrantreadwritelock-%E9%80%82%E5%90%88%E4%BB%80%E4%B9%88%E5%9C%BA%E6%99%AF
+
+**读优先锁和写优先锁**
+
+读优先锁期望的是，读锁能被更多的线程持有，以便提高读线程的并发性，它的工作方式是：当读线程 A 先持有了读锁，写线程 B 在获取写锁的时候，会被阻塞，并且在阻塞过程中，后续来的读线程 C 仍然可以成功获取读锁，最后直到读线程 A 和 C 释放读锁后，写线程 B 才可以成功获取写锁。
+
+「写优先锁」是优先服务写线程，其工作方式是：当读线程 A 先持有了读锁，写线程 B 在获取写锁的时候，会被阻塞，并且在阻塞过程中，后续来的读线程 C 获取读锁时会失败，于是读线程 C 将被阻塞在获取读锁的操作，这样只要读线程 A 释放读锁后，写线程 B 就可以成功获取写锁。
+
+https://xiaolincoding.com/os/4_process/pessim_and_optimi_lock.html#%E8%AF%BB%E5%86%99%E9%94%81
+
+## 乐观 悲观
+
+悲观锁：互斥锁 读写锁
+
+乐观锁：版本机制（例如GIT，在线文档编辑） CAS机制 
 
 ## volatile修饰引用变量
 
@@ -435,6 +498,12 @@ AQS 核心思想是，如果被请求的共享资源空闲，则将当前请求�
 
 # 数据库
 
+## 数据完整性
+
+数据的完整性(实体完整性、域完整性、引用完整性)
+
+https://blog.csdn.net/qq_42926411/article/details/119861205
+
 ## 码 候选码 主码
 
 [数据库中 码、候选码、主码 的区别](https://blog.csdn.net/cry_shoulder/article/details/94549319)
@@ -580,6 +649,12 @@ expain出来的信息有10列，分别是id、select_type、table、type、possi
 
 [设计模式](./设计模式/设计模式.md)
 
+# 数据结构与算法
+
+## 总体概况
+
+![](./java规范和书籍/数据结构与算法/summary.png)
+
 # 操作系统
 
 ## 参考书籍
@@ -589,6 +664,14 @@ expain出来的信息有10列，分别是id、select_type、table、type、possi
 3、UNIX网络编程卷1：套接字联网API
 4、JavaGuide面试指北
 5、netty入门指南
+
+## Inode
+
+一个文件只有一个inode;多个文件名可以有同一个inode.
+
+## shell命令本质
+
+外部命令诸如ls ps需要通过fork exec创建子进程来运行;内建命令如cd不需要
 
 ## 中断
 
@@ -606,6 +689,11 @@ expain出来的信息有10列，分别是id、select_type、table、type、possi
 
 另一个最好不要使用中断的场景是网络。网络端收到大量数据包，如果每一个包都发生一次中断，那么有可能导致操作系统发生活锁（livelock），即不断处理中断而无法处理用户层的请求。例如，假设一个Web 服务器因为“点杠效应”而突然承受很重的负载。这种情况下，偶尔使用轮询的方式可以更好地控制系统的行为，并允许Web 服务器先服务一些用户请求，再回去检查网卡设备是否有更多数据包到达。
 另一个基于中断的优化就是合并（coalescing）。设备在抛出中断之前往往会等待一小段时间，在此期间，其他请求可能很快完成，因此多次中断可以合并为一次中断抛出，从而降低处理中断的代价。当然，等待太长会增加请求的延迟，这是系统中常见的折中。参见Ahmad 等人的文章[A+11]，有精彩的总结。
+
+## 中断标志位 可屏蔽中断 不可屏蔽中断
+
+  可屏蔽中断和不可屏蔽中断都属于外部中断，是由外部中断源引起的；但它们也有区别：可屏蔽中断是通过CPU的INTR引脚引入，当中断标志IF＝1时允许中断，当IF=0时禁止中断，不可屏蔽中断是由NMI引脚引入，不受IF标志的影响。 
+  不可屏蔽中断源一旦提出请求，CPU必须无条件响应，而对可屏蔽中断源的请求，CPU可以响应，也可以不响应。CPU一般设置两根中断请求输入线：可屏蔽中断请求INTR(Interrupt Require)和不可屏蔽中断请求NMI(NonMaskable Interrupt)。对于可屏蔽中断，除了受本身的屏蔽位控制外，还都要受一个总的控制，即CPU标志寄存器中的中断允许标志位IF(Iinterrupt Flag)的控制，IF位为1，可以得到CPU的响应，否则，得不到响应。IF位可以由用户控制，指令STI或Turbo c的Enable()函数，将IF位置1(开中断)，指令CLI或Turbo_c 的Disable()函数，将IF位清0(关中断)。
 
 ## 并发与并行区别
 
@@ -1500,7 +1588,7 @@ Cache Aside Pattern 中遇到写请求是这样的：更新 DB，然后直接删
 
 ### 快表和跳表
 
-[跳表](https://segmentfault.com/a/1190000037473381)
+[跳表](https://xiaolincoding.com/redis/data_struct/data_struct.html#%E8%B7%B3%E8%A1%A8)
 [快表](https://xiaolincoding.com/redis/data_struct/data_struct.html#quicklist)
 
 ## Rabbitmq
@@ -1883,7 +1971,45 @@ io.netty.channel.Channel类的一段注释请参考。
 
 
 
-# 分布式锁
+# 分布式
+
+## CAP
+
+总体概况：https://javaguide.cn/distributed-system/protocol/cap-and-base-theorem.html
+分区容忍性中的P是前提如何理解：https://www.zhihu.com/question/54105974
+
+## 分布式一致性算法
+
+**2PC 3PC PAXOS RAFT GOSSIP ZAB**
+
+- 强一致性
+
+- - 说明：保证系统改变提交以后立即改变集群的状态。
+
+  - 模型：
+
+  - - Paxos
+    - Raft（muti-paxos）
+    - ZAB（muti-paxos）
+
+- 弱一致性
+
+- - 说明：也叫最终一致性，系统不保证改变提交以后立即改变集群的状态，但是随着时间的推移最终状态是一致的。
+
+  - 模型：
+
+  - - DNS系统
+    - Gossip协议
+
+https://zhuanlan.zhihu.com/p/130332285
+https://javaguide.cn/distributed-system/distributed-process-coordination/zookeeper/zookeeper-plus.html#%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98
+https://javaguide.cn/distributed-system/protocol/paxos-algorithm.html
+https://javaguide.cn/distributed-system/protocol/raft-algorithm.html
+https://javaguide.cn/distributed-system/protocol/gossip-protocl.html
+
+## 分布式锁
+
+https://javaguide.cn/distributed-system/distributed-lock-implementations.html
 
 # 系统设计
 

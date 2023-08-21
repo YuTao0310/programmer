@@ -1,3 +1,499 @@
+# ACM模式注意点
+
+## 1 Scanner相关说明
+
+需要注意的是，如果在通过nextInt()读取了整数后，再接着读取字符串，读出来的是回车换行:"\r\n",因为nextInt仅仅读取数字信息，而不会**读取**回车换行"\r\n".
+
+所以，如果在业务上需要读取了整数后，接着读取字符串，那么就应该连续执行两次nextLine()，第一次是取走回车换行，第二次才是读取真正的字符串。或者可以直接使用next可以避免这类问题。
+
+[【ACM模式】牛客网ACM机试模式Python&Java&C++主流语言OJ输入输出案例代码总结](https://blog.csdn.net/qq_39295220/article/details/116785551)
+[【Java学习笔记】Scanner类中next系列方法的总结](https://blog.csdn.net/cy973071263/article/details/88908810)
+
+## 2 数组拷贝方法
+
+```java
+Arrays.copyOf(dataType[] srcArray,int length);
+Arrays.copyOfRange(dataType[] srcArray,int startIndex,int endIndex)
+System.arraycopy(dataType[] srcArray,int srcIndex,int destArray,int destIndex,int lengt)
+```
+
+## 3  随机数生成
+
+```java
+# 生成整数
+new Random().nextInt(10) //生成0-9的数字
+int nextInt()            //随机返回一个int型整数
+int nextInt(int num)         //随机返回一个值在[0,num)的int类型的整数,包括0不包括num
+# 生成浮点数 0-1之间
+new Random().nextDouble()
+```
+
+## 4 日志输出方法
+
+```java
+# 1
+System.out.printf("%d\n", i)
+# 2
+System.out.format("%d\n", i)
+# 3
+System.out.print(String.format("%d\n", i))
+# 4
+Formatter f = new Formatter(System.out)
+f.format("%d\n", i)
+```
+
+## 5 比较器
+
+Arrays.sort、Collections.sort默认升序 PriorityQueue默认最小堆。
+Arrays.sort如果需要自定义比较器，不能针对基本数据类型的数组。
+
+方式一：
+
+使用Comparator。
+
+```java
+        //引入Comparator，指定比较的算法
+        Comparator<Hero> c = new Comparator<Hero>() {
+            @Override
+            public int compare(Hero h1, Hero h2) {
+                //按照hp进行排序
+                if(h1.hp>=h2.hp)
+                    return 1;  //正数表示h1比h2要大
+                else
+                    return -1;
+            }
+        };
+        Collections.sort(heros,c);
+```
+
+方式二：
+
+实现Comparable接口。
+
+```java
+public class Hero implements Comparable<Hero>{
+    public String name;
+    public float hp;
+       
+    public int damage;
+  
+    @Override
+    public int compareTo(Hero anotherHero) {
+        if(damage<anotherHero.damage)
+            return 1; 
+        else
+            return -1;
+    }
+}
+```
+
+# 小红书8.6笔试
+
+第二题：类似于01背包；有n件事情，每件事情都有时间ti,精力hi,快乐值ai，如果小红做某件事情就会消耗对应的时间tj,精力hj,从而获得快乐值aj；求在消耗时间不超过 t,且精力不超过 h的情况下，小红所能获得的最大快乐值是多少；
+
+输入示例
+
+第一行输入表示事件数量n;
+
+第二行输入表示小红的时间 t ,精力 h;
+
+后面连续输入n行，每一行表示每件事情所对应的时间，精力，快乐值；
+
+3
+
+5  4
+
+1 2 2
+
+2 1 3
+
+4 1 5
+
+输出结果：7
+
+==动态规划 迭代 01背包==
+
+```java
+public class RedBookTest2 {
+    static int n;
+    static int[] t , h , a;
+
+    public static void main(String[] args) {
+        n = 3;
+        t = new int[]{1, 2, 4};
+        h = new int[]{2, 3, 3};
+        a = new int[]{2, 3, 5};
+        int Hmax = 5, Tmax = 5;
+        System.out.println(findBestHappiness1(0, Hmax, Tmax));
+         System.out.println(findBestHappiness2(0, Hmax, Tmax));
+
+    }
+
+    /* DFS 迭代实现 */
+    private static long findBestHappiness1(int index, int Hmax, int Tmax) {
+        if (index >= n) return 0;
+        if (h[index] > Hmax || t[index] > Tmax) return findBestHappiness1(index + 1, Hmax, Tmax);
+        else return Math.max(findBestHappiness1(index + 1, Hmax, Tmax), a[index] + findBestHappiness1(index + 1, Hmax - h[index], Tmax - t[index]));
+    }
+
+    /* 动态规划实现 */
+    private static long findBestHappiness2(int index, int Hmax, int Tmax) {
+        long [][][] dp = new long[n + 1][Hmax + 1][Tmax + 1];
+        for (int i = 1; i <= n; i++)
+            for (int j = 1; j <= Hmax; j++)
+                for (int k = 1; k <= Tmax; k++) {
+                    if (h[i - 1] > j || t[i - 1] > k) dp[i][j][k] = dp[i - 1][j][k];
+                    else dp[i][j][k] = Math.max(dp[i - 1][j][k], a[i - 1] + dp[i - 1][j - h[i - 1]][k  - t[i - 1]]);
+                }
+        return dp[n][Hmax][Tmax];
+    }
+}
+```
+
+第三题 一个树，每个节点有一个权重，初始每个节点都是白色，每次操作可以选择两个节点，如果这俩节点权重和为质数，则可以选一个染红。问最多能染红多少节点？
+    思路：dp dfs, 类似leetcode打家劫舍3。二叉树=>n叉树，相邻只能抢一个=>相邻且权重和为质数 才能抢一个
+
+==DFS 贪心==
+
+其实就是先素数打表，然后建图，dfs递归，从叶子节点开始判断，如果叶子节点和父节点都是白的，权值和是素数，就把叶子结点染红，结果+1，标记红色，然后向上归，这样也是有点贪心的思想，因为叶子结点染红了以后不影响他的父节点和父节点的父节点满足条件和染红
+
+# 美团8.12笔试
+
+第五题 一个树，每个节点有一个权重，初始每个节点都是白色，每次操作可以选择两个节点，如果这俩节点权重和为整数的平方，则可以选两个染红。问最多能染红多少节点？
+
+==DFS 贪心==
+
+```java
+public class MeiTuanTest5 {
+    static int n;
+    static Map<Integer, List<Integer>> map = new HashMap<>();
+    static int[] vals;
+
+    static class Result {
+        int count;
+        boolean isRed;
+    }
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        n = sc.nextInt();
+        vals = new int[n];
+        for (int i = 0; i < n; i++) vals[i] = sc.nextInt();
+        for (int i = 0; i < n - 1; i++) {
+            int x = sc.nextInt(), y = sc.nextInt();
+            if (x < y) map.computeIfAbsent(x, t -> new LinkedList<>()).add(y);
+            else map.computeIfAbsent(y, t -> new LinkedList<>()).add(x);
+        }
+        Result res = findMaxNodes(1);
+        System.out.println(res.count);
+    }
+
+    public static Result findMaxNodes(int root) {
+        // notselected, selected
+        Result res = new Result();
+        res.count = 0;
+        res.isRed = false;
+        List<Integer> children = map.get(root);
+        if (children == null) return res;
+        for (Integer i : children) {
+            Result temp = findMaxNodes(i);
+            res.count += temp.count;
+            if (isPow(vals[root - 1], vals[i - 1]) && temp.isRed == false) {
+                temp.isRed = true;
+                res.isRed = true;
+                res.count += 2;
+            }
+        }
+        return res;
+    }
+
+    private static boolean isPow(int x, int y) {
+        long temp1 = x * 1L * y;
+        long temp2 = (long)Math.pow(temp1, 0.5);
+        return temp1 == temp2 * temp2;
+
+    }
+}
+```
+
+# 美团第二次笔试8.19
+
+
+
+# 字节8.10面试
+
+不超过n的最大树
+
+```
+num=500
+arr=[5, 6, 8, 7]
+res=88
+```
+
+==贪心 二分==
+
+```java
+import java.util.Arrays;
+
+public class ZijieTest {
+    public static void main(String[] args) {
+        System.out.println(build(500, new int[]{5, 6, 8, 7}));
+    }
+    public static int build(int num, int[] arr) {
+        //初始化参数
+        String str = String.valueOf(num - 1);
+        str = str + str.charAt(str.length() - 1);
+        char[] res = new char[str.length() - 1];
+        Arrays.fill(res, '0');
+        Arrays.sort(arr);
+        int len = res.length;
+        boolean flag = false;
+        for (int i = 0; i < len; i++) {//从高位到低位遍历原数字
+            int index = flag ? arr.length - 1 : search(str, i, arr);
+            res[i] = index != -1 ? (char) (arr[index] + '0') : '0';
+            if (res[i] < str.charAt(i)) {
+                flag = true;
+            }
+        }
+        return Integer.parseInt(new String(res).substring(0,res.length));
+    }
+    public static int search(String str, int i, int[] arr) {
+        int find = str.charAt(i + 1) - '0' >= arr[0] ? str.charAt(i) - '0' : str.charAt(i) - '0' - 1;
+        int left = 0, right = arr.length - 1;
+        int index = -1;
+        while (left <= right) {
+            int mid = left + ((right - left) >> 1);
+            if (find > arr[mid]) {
+                left = mid + 1;
+            } else if (find < arr[mid]) {
+                right = mid - 1;
+            } else {
+                index = mid;
+                break;
+            }
+        }
+        return index == left + ((right - left) >> 1) ? index : right;
+    }
+}
+```
+
+
+
+# 米哈游8.13笔试
+
+**第一题**一个n*m的矩阵，左下角坐标为（1,1），右上角坐标为（n,m）,主角每次可以移动一个格子，同时该矩阵有一个特性，上边界下边界相邻，左边界右边界相邻，即（x,1）与（x,m）相邻，现在给定主角坐标，角色A坐标，角色B坐标，判断主角最少需要走几步才能先到A再到B
+
+```java
+import java.util.Scanner;
+
+public class Test1 {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int m = in.nextInt(), n = in.nextInt();
+        int x1 = in.nextInt(), y1 = in.nextInt();
+        int x2 = in.nextInt(), y2 = in.nextInt();
+        int x3 = in.nextInt(), y3 = in.nextInt();
+        System.out.println(f(x1, x2, m) + f(x2, x3, m) + f(y1, y2, n) + f(y2, y3, n));
+    }
+
+    public static int f(int i, int j, int len) {
+        return Math.min(Math.abs(i - j), Math.min(i, j) + len - Math.max(i, j));
+    }
+}
+```
+
+
+
+**第二题** 一颗有根树，根节点编号为1，边长度均为1，每次操作可以将一个新叶子节点接在原来的一个叶子上，新加的边长度也是1，可以进行任意多次操作。求操作结束后，与根节点距离不超过k的节点数最大值是多少。 输入：第一行输入两个整数n和k，接下来n-1行，每行输入两个整数代表这俩个节点之间有一条边； 输出一个整数代表答案
+
+==DFS==
+
+```java
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
+
+public class Test2 {
+    static List<List<Integer>> tree = new ArrayList<>();
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int n = in.nextInt(), k = in.nextInt();
+        
+        for (int i = 0; i < n; i++) {
+            tree.add(new ArrayList<>());
+        }
+        for (int i = 0; i < n - 1; i++) {
+            int x = in.nextInt(), y = in.nextInt();
+            tree.get(x).add(y);
+        }
+
+        System.out.println(dfs(0, 0, k));
+    }
+
+    public static int dfs(int root, int depth, int k) {
+        if (depth - k > 0) return 0;
+        int ans = 1;
+        if (!tree.get(root).isEmpty()) {
+            for (Integer child : tree.get(root)) {
+                ans += dfs(child, depth + 1, k);
+            }
+        } else {
+            ans += Math.max(0, k - depth);
+        }
+        return ans;
+    }
+}
+```
+
+
+
+**第三题**没触发大保底，p/2概率当期五星，p/2概率常驻五星，1-p概率不是五星
+
+90次小保底，必中五星，一半概率是当期五星
+
+触发小保底歪了后，p概率当期五星，1-p概率不是五星
+
+180次必是当期五星
+
+抽中当期五星的次数期望值是？
+
+```java
+import java.util.Scanner;
+// 104.5497057
+public class Test3 {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        double p = in.nextDouble();
+        System.out.println(calExpect(p));
+    }
+
+    public static double calExpect(double p) {
+        double res = 0.0;
+        double[] probs = new double[89 * 2 + 2];
+        double temp = 1.0;
+        double dangqiAfterChangzhu = 0;
+
+
+        
+        for (int i = 1; i <= 89; i++) {
+            dangqiAfterChangzhu += p * temp * i;
+            temp *= (1 - p);
+        }
+        dangqiAfterChangzhu += (89 + 1) * temp;
+
+        temp = 1.0;
+        for (int i = 1; i <= 89 + 1; i++) {
+            if (i <= 89) {
+                probs[i] = temp * p / 2;
+                res += probs[i] * i + (dangqiAfterChangzhu + i) * temp * p / 2;
+                temp *= (1 - p);
+                
+            } else if (i == 89 + 1){
+                probs[i] = temp * 0.5;
+                temp *= 0.5;
+                res += probs[i] * i;
+            } 
+        }
+        res += (dangqiAfterChangzhu + 89 + 1) * temp;
+        return res;
+    }
+}
+```
+
+# Acwing 165 小猫爬山
+
+==DFS 回溯 剪枝==
+
+```java
+import java.util.*;
+
+public class Main {
+    static int n, maxW;
+    static Integer[] w;
+    static int[] sum;
+    static int ans;
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        n = sc.nextInt();
+        maxW = sc.nextInt();
+        w = new Integer[n];
+        sum = new int[n];
+        for (int i = 0; i < n; i++) {
+            w[i] = sc.nextInt();
+        }
+        Arrays.sort(w, (n1, n2) -> (n2 - n1));
+        ans = n;
+        dfs(0, 0);
+        System.out.println(ans);
+    }
+    
+    public static void dfs(int m, int k) {
+        if (k >= ans) return ;
+        if (m == n) {
+            ans = k;
+            return;
+        }
+        for (int i = 0; i < k; i++) {
+            if (sum[i] + w[m] <= maxW) {
+                sum[i] += w[m];
+                dfs(m + 1, k);
+                sum[i] -= w[m];
+            }
+        }
+        sum[k] = w[m];
+        dfs(m + 1, k + 1);
+        sum[k] = 0;
+    }
+}
+```
+
+==贪心不行==
+
+反例：
+请尝试在maxV=16时，重量为9 5 5 5 4 3
+贪心结果是9+5 5+5+4 3，结果为3
+但正确结果为9+4+3 5+5+5，结果为2
+举出反例，则贪心错误
+
+```java
+import java.util.*;
+
+public class Main {
+    static int n, maxW;
+    static Integer[] w;
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        n = sc.nextInt();
+        maxW = sc.nextInt();
+        w = new Integer[n];
+        for (int i = 0; i < n; i++) {
+            w[i] = sc.nextInt();
+        }
+        
+        System.out.println(findMin());
+    }
+    
+    public static int findMin() {
+        Arrays.sort(w, (n1, n2) -> (n2 - n1));
+        int[] rev = new int[n];
+        Arrays.fill(rev, maxW);
+        int ans = -1;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (rev[j] >= w[i]) {
+                    rev[j] -= w[i];
+                    ans = Math.max(ans, j + 1);
+                    break;
+                }
+            }
+        }
+        return ans;
+    }
+}
+```
+
+
+
 # 剑指offer03-数组中重复的数字
 
 找出数组中重复的数字。
@@ -6239,6 +6735,53 @@ class Solution {
 }
 ```
 
+# Leetcode[28. 找出字符串中第一个匹配项的下标](https://leetcode.cn/problems/find-the-index-of-the-first-occurrence-in-a-string/)
+
+==字符串 KMP==
+
+```java
+class Solution {
+    public void getNext(int[] next, String s){
+        int j = -1;
+        next[0] = j;
+        for (int i = 1; i < s.length(); i++){
+            while(j >= 0 && s.charAt(i) != s.charAt(j+1)){
+                j=next[j];
+            }
+
+            if(s.charAt(i) == s.charAt(j+1)){
+                j++;
+            }
+            next[i] = j;
+        }
+    }
+    public int strStr(String haystack, String needle) {
+        if(needle.length()==0){
+            return 0;
+        }
+
+        int[] next = new int[needle.length()];
+        getNext(next, needle);
+        int j = -1;
+        for(int i = 0; i < haystack.length(); i++){
+            while(j>=0 && haystack.charAt(i) != needle.charAt(j+1)){
+                j = next[j];
+            }
+            if(haystack.charAt(i) == needle.charAt(j+1)){
+                j++;
+            }
+            if(j == needle.length()-1){
+                return (i-needle.length()+1);
+            }
+        }
+
+        return -1;
+    }
+}
+```
+
+
+
 # Leetcode[31. 下一个排列](https://leetcode.cn/problems/next-permutation/)
 
 整数数组的一个 排列  就是将其所有成员以序列或线性顺序排列。
@@ -8198,7 +8741,9 @@ class Solution {
 }
 ```
 
-# Leetode [128. 最长连续序列](https://leetcode.cn/problems/longest-consecutive-sequence/)
+# Leetode [128. 最长连
+
+# 续序列](https://leetcode.cn/problems/longest-consecutive-sequence/)
 
 给定一个未排序的整数数组 nums ，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。
 
@@ -8551,6 +9096,18 @@ public class Solution {
             fast = fast.next.next;
         }
         return true;
+    }
+}
+
+public class Solution {
+    public boolean hasCycle(ListNode head) {
+        ListNode fast = head, slow = head;
+        while (true) {
+            if (fast == null || fast.next == null) return false;
+            fast = fast.next.next;
+            slow = slow.next;
+            if (fast == slow) return true;
+        }
     }
 }
 ```
@@ -9053,6 +9610,126 @@ class Solution {
     }
 }
 ```
+
+# Leetcode[213. 打家劫舍 II](https://leetcode.cn/problems/house-robber-ii/)
+
+你是一个专业的小偷，计划偷窃沿街的房屋，每间房内都藏有一定的现金。这个地方所有的房屋都 **围成一圈** ，这意味着第一个房屋和最后一个房屋是紧挨着的。同时，相邻的房屋装有相互连通的防盗系统，**如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警** 。
+
+给定一个代表每个房屋存放金额的非负整数数组，计算你 **在不触动警报装置的情况下** ，今晚能够偷窃到的最高金额。
+
+==动态规划==
+
+```java
+class Solution {
+    public int rob(int[] nums) {
+        if(nums.length == 0) return 0;
+        if(nums.length == 1) return nums[0];
+        return Math.max(myRob(Arrays.copyOfRange(nums, 0, nums.length - 1)), 
+                        myRob(Arrays.copyOfRange(nums, 1, nums.length)));
+    }
+    private int myRob(int[] nums) {
+        int pre = 0, cur = 0, tmp;
+        for(int num : nums) {
+            tmp = cur;
+            cur = Math.max(pre + num, cur);
+            pre = tmp;
+        }
+        return cur;
+    }
+}
+```
+
+# Leetcode[337. 打家劫舍 III](https://leetcode.cn/problems/house-robber-iii/)
+
+小偷又发现了一个新的可行窃的地区。这个地区只有一个入口，我们称之为 `root` 。
+
+除了 `root` 之外，每栋房子有且只有一个“父“房子与之相连。一番侦察之后，聪明的小偷意识到“这个地方的所有房屋的排列类似于一棵二叉树”。 如果 **两个直接相连的房子在同一天晚上被打劫** ，房屋将自动报警。
+
+给定二叉树的 `root` 。返回 ***在不触动警报的情况下** ，小偷能够盗取的最高金额* 。
+
+==动态规划 DFS==
+
+```java
+class Solution {
+    public int rob(TreeNode root) {
+        int[] rootStatus = dfs(root);
+        return Math.max(rootStatus[0], rootStatus[1]);
+    }
+
+    public int[] dfs(TreeNode node) {
+        if (node == null) {
+            return new int[]{0, 0};
+        }
+        int[] l = dfs(node.left);
+        int[] r = dfs(node.right);
+        int selected = node.val + l[1] + r[1];
+        int notSelected = Math.max(l[0], l[1]) + Math.max(r[0], r[1]);
+        return new int[]{selected, notSelected};
+    }
+}
+```
+
+# Leetcode [2560. 打家劫舍 IV](https://leetcode.cn/problems/house-robber-iv/)
+
+沿街有一排连续的房屋。每间房屋内都藏有一定的现金。现在有一位小偷计划从这些房屋中窃取现金。
+
+由于相邻的房屋装有相互连通的防盗系统，所以小偷 **不会窃取相邻的房屋** 。
+
+小偷的 **窃取能力** 定义为他在窃取过程中能从单间房屋中窃取的 **最大金额** 。
+
+给你一个整数数组 `nums` 表示每间房屋存放的现金金额。形式上，从左起第 `i` 间房屋中放有 `nums[i]` 美元。
+
+另给你一个整数 `k` ，表示窃贼将会窃取的 **最少** 房屋数。小偷总能窃取至少 `k` 间房屋。
+
+返回小偷的 **最小** 窃取能力。
+
+==二分答案 动态规划==
+
+```java
+class Solution {
+    public int minCapability(int[] nums, int k) {
+        int left = 0, right = (int) 1e9;
+        while (left < right) {
+            int mid = (left + right) >>> 1;
+            int f0 = 0, f1 = 0;
+            for (int x : nums)
+                if (x > mid) f0 = f1;
+                else {
+                    int tmp = f1;
+                    f1 = Math.max(f1, f0 + 1);
+                    f0 = tmp;
+                }
+            if (f1 >= k) right = mid;
+            else left = mid + 1;
+        }
+        return right;
+    }
+}
+```
+
+```java
+class Solution {
+    public int minCapability(int[] nums, int k) {
+        int left = 0, right = (int) 1e9;
+        while (left <= right) {
+            int mid = (left + right) >>> 1;
+            int f0 = 0, f1 = 0;
+            for (int x : nums)
+                if (x > mid) f0 = f1;
+                else {
+                    int tmp = f1;
+                    f1 = Math.max(f1, f0 + 1);
+                    f0 = tmp;
+                }
+            if (f1 >= k) right = mid - 1;
+            else left = mid + 1;
+        }
+        return left;
+    }
+}
+```
+
+
 
 # Leetcode[200. 岛屿数量](https://leetcode.cn/problems/number-of-islands/)
 
@@ -10048,7 +10725,7 @@ class Solution {
 }
 ```
 
-==动态规划==
+==动态规划== ==01背包==
 
 ```java
 class Solution {
@@ -10694,8 +11371,11 @@ class Solution {
 ```java
 class Solution {
     public int maxEqualFreq(int[] nums) {
+        //使用哈希表count 记录数 x出现的次数 count[x]
         Map<Integer, Integer> freq = new HashMap<Integer, Integer>();
+        //freq记录出现次数为 f 的数的数目为 freq[f]
         Map<Integer, Integer> count = new HashMap<Integer, Integer>();
+        //maxFreq 表示最大出现次数
         int res = 0, maxFreq = 0;
         for (int i = 0; i < nums.length; i++) {
             if (count.getOrDefault(nums[i], 0) > 0) {
@@ -10715,6 +11395,42 @@ class Solution {
     }
 }
 ```
+
+# Leetcode[2439. 最小化数组中的最大值](https://leetcode.cn/problems/minimize-maximum-of-array/)
+
+==二分答案 二分查找==
+
+```java
+class Solution {
+
+    private boolean check(int[] nums, int limit) {
+        long ex = 0;
+        // 从后往前遍历将 nums[i] 多余的数加到前面
+        // 为了不改变nums数组，用ex表示多余的部分累积的结果
+        // i 减到1，计算出分给nums[0]的ex
+        for (int i = nums.length-1; i > 0; i--) {
+            ex = Math.max(nums[i] - limit + ex, 0);
+        }
+
+        return nums[0] + ex <= limit;
+    }
+
+    public int minimizeArrayValue(int[] nums) {
+        int l = 0,r = (int)1e9+5;
+        while (l<r) {
+            // 防止超int，用long也行
+			int limit = l+(r-l)/2;
+
+			// 最左侧加上ex仍然小于等于limit，可能还有下降的余地，右侧靠拢，否则左侧靠拢    
+			if(check(nums, limit)) r = limit;
+			else l=limit+1;
+		}
+    	return r;
+    }
+}
+```
+
+
 
 # 311-[6182. 反转二叉树的奇数层](https://leetcode.cn/problems/reverse-odd-levels-of-binary-tree/)
 
