@@ -17,9 +17,11 @@ public class Test2 {
             indegs[next]++;
         }
         Deque<Integer> queue = new LinkedList<>();
-        for (int i : indegs) 
-            if (i == 0)
-                queue.add(i);
+        // for (int i : indegs) 
+        //     if (i == 0)
+        //         queue.add(i);
+        for (int i = 0; i < num; i++)
+            if (indegs[i] == 0) queue.add(i);
         while(!queue.isEmpty()) {
             num--;
             int t = queue.poll();

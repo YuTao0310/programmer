@@ -6,6 +6,27 @@
     "configurations": [
         {
             "type": "java",
+            "name": "LeetCodeTest",
+            "request": "launch",
+            "mainClass": "LeetCodeTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "ListArrayTest",
+            "request": "launch",
+            "mainClass": "ListArrayTest",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
+            "name": "StaticConstruct",
+            "request": "launch",
+            "mainClass": "StaticConstruct",
+            "projectName": "javaExample_2f194e7b"
+        },
+        {
+            "type": "java",
             "name": "XunfeiTest",
             "request": "launch",
             "mainClass": "XunfeiTest",

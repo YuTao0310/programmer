@@ -1,4 +1,4 @@
-# ACM模式注意点
+ACM模式注意点
 
 ## 1 Scanner相关说明
 
@@ -64,6 +64,7 @@ Arrays.sort如果需要自定义比较器，不能针对基本数据类型的数
             }
         };
         Collections.sort(heros,c);
+		Collections.sort(heros, (h1, h2) -> h1.hp - h2.hp);
 ```
 
 方式二：
@@ -217,11 +218,196 @@ public class MeiTuanTest5 {
 
 # 美团第二次笔试8.19
 
+**第三题**
+
+01串翻转
+
+小美定义一个 01 串的权值为：每次操作选择一位取反，使得相邻字符都不相等的最小操作次数。
+
+例如，"10001"的权值是 1，因为只需要修改一次：对第三个字符取反即可。
+
+现在小美拿到了一个 01 串，她希望你求出所有非空连续子串的权值之和，你能帮帮她吗？
+
+**输入描述**
+
+一个仅包含'0'和'1'的字符串，长度不超过 2000。
+
+**输出描述**
+
+所有非空子串的权值和。
+
+**示例1**
+
+**输入**
+
+10001
+
+**输出**
+
+8
+
+**说明**
+
+长度为 2 的子串中，有 2 个"00"的权值是 1。
+
+长度为 3 的 3 个子串权值都是 1。
+
+长度为 4 的 2 个子串权值都是 1。
+
+长度为 5 的 1 个子串权值是 1。
+
+总权值之和为 2+3+2+1=8
+
+==前缀和==
+
+```java
+s = [int(c) for c in input()]
+n = len(s)
+
+# 枚举第一位就好了
+s1 = list(s)
+s2 = list(s)
+
+s2[0] ^= 1
+
+for i in range(1,n):
+    s1[i] = s1[i-1] ^ 1
+    s2[i] = s2[i-1] ^ 1
+
+pres1, pres2 = [0]*(n+1),[0]*(n+1)
+
+for i in range(1, n+1):
+    pres1[i], pres2[i] = pres1[i-1], pres2[i-1]
+    if s[i-1] != s1[i-1]: pres1[i] += 1
+    if s[i-1] != s2[i-1]: pres2[i] += 1
+
+
+res = 0
+for i in range(n):
+    for j in range(i+1,n):
+       res += min(pres1[j+1]-pres1[i], pres2[j+1]-pres2[i])
+
+print(res)
+```
+
+**第四题**
+
+小美的数组构造。
+
+小美拿到了一个数组a，她准备构造一个数组b满足：
+
+1.b的每一位都和a对应位置不同，即bi≠ai。
+
+2.b的所有元素之和都和a相同。
+
+3.b的数组均为正整数。
+
+请你告诉小美有多少种构造方式。由于答案过大，请对10^9+7取模。
+
+**输入描述**
+
+第一行输入一个正整数n，代表数组的大小。
+
+第二行输入n个正整数ai，代表小美拿到的数组。
+
+![图片](https://mmbiz.qpic.cn/sz_mmbiz_png/yUlgRBVNujIqIqcGWKicTb8ajhLln4rjQBQY0UkcLddAko6ibVdc4j8Qw8MMMqrgl81LVWfQlGicibHicAzdysuyUvw/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1)
+
+**输出描述**
+
+一个整数，代表构造方式对10^9+7)取模的值。
+
+==动态规划==
+
+记忆化搜索。
+
+对于每一个位置来说，可以填充的数据是 **当前剩余的数字**且不等于原数组的数字。（这个数据规模很明显都指向这个角度的DP）。
+
+```python
+n = int(input())
+
+a = [int(c) for c in input().split()]
+dp = {}
+def dfs(i,j):
+    if i >= n - 1:
+        return 1 if j > 0 and j != a[-1] else 0
+    if (i,j) in dp: return dp[(i,j)]
+    cnt = 0
+    for c in range(1,j+1):
+        if c != a[i]:
+            cnt += dfs(i+1, j-c)
+            cnt %= 10**9 + 7
+    dp[(i, j)] = cnt % (10**9 + 7)
+    return cnt
+
+print(dfs(0, sum(a)))
+```
+
+**第五题**
+
+小美的数组操作
+
+小美拿到了一个数组，她每次可以进行如下操作：选择两个元素，一个加 1，另一个减 1。
+
+小美希望若干次操作后，众数的出现次数尽可能多。你能帮她求出最小的操作次数吗？
+
+众数定义：在一组数据中，出现次数最多的数据，是一组数据中的原数据，而不是相应的次数。一组数据中的众数不止一个，如数据2、3、-1、2、1、3中，2、3都出现了两次，它们都是这组数据中的众数。
+
+**输入描述**
+
+第一行为一个正整数n，代表数组的大小。
+
+第二行输入n个正整数ai，代表小美拿到的数组。
+
+![图片](https://mmbiz.qpic.cn/sz_mmbiz_png/yUlgRBVNujIqIqcGWKicTb8ajhLln4rjQOtreZSoToNp82picvicXhjD5XHz7WlmpVmgj82ldJkDibKMNgmPfdiazeA/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1)
+
+**输出描述**
+
+一个整数，代表最小的操作次数。
+
+
+
+思维题。
+
+不难发现，如果所有的数字加起来切好是n的倍数，那么是肯定可以把所有数字归为同一个数字的。
+
+否则，我们是一定可以产出n-1个众数的，关键就是排除哪个元素呢？排除的元素要使得最后的操作次数尽可能少，显然是应该排除最大或者最小（与平均数偏移最多。）枚举这两种情况即可。
+
+```java
+from itertools import accumulate
+
+n = int(input())
+a = [int(c) for c in input().split()]
+
+a.sort()
+sum_ = sum(a)
+if sum_ % n == 0:
+    res = 0
+    avg = sum_ // n
+    for i in a:
+        res += abs(avg - i)
+    res //= 2
+    print(res)
+else:
+    nums1 = a[1:]
+    nums2 = a[:-1]
+
+    def cal(nums):
+        sum_ = sum(nums)
+        avg = sum_ // len(nums) + (0 if sum_ % len(nums) == 0 else 1)
+        x,y = 0, 0
+        for num in nums:
+            if num >= avg: x+= num -avg
+            else: y+= avg - num
+        return max(x,y)
+
+    print(min(cal(nums1), cal(nums2)))
+```
+
 
 
 # 字节8.10面试
 
-不超过n的最大树
+不超过n的最大值
 
 ```
 num=500
@@ -276,9 +462,344 @@ public class ZijieTest {
 }
 ```
 
+# 京东 8.12
+
+https://mp.weixin.qq.com/s/WgcGqoDsGz8L_aiFgYvUDg
+
+**第一题**
+
+https://codefun2000.com/p/P1446
+
+塔子哥有一个长度为n字符串，他想把这个字符串转换为回文串。塔子哥有两种魔法，使用一次魔法需要花费 1 法力值。
+
+第一种魔法可以拿出字符串的第一个字母，并将其插在字符串的末尾。例如，对于字符串abbc ，通过第一种魔法后后变成了 bbca
+
+第二种魔法是将字符串中的一个字符变成任意小写字母。
+
+塔子哥现在问你，需要至少多少法力值才能将这个字符串转换为回文串。
+
+==枚举==
+
+```java
+import java.util.Scanner;
+
+public class Main {
+    public static int op1(String s) {
+        int res = 0;
+        int l = 0;
+        int r = s.length() - 1;
+        while (l < r) {
+            if (s.charAt(l) != s.charAt(r)) {
+                res++;
+            }
+            l++;
+            r--;
+        }
+        return res;
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        int n = scanner.nextInt();
+        String s = scanner.next();
+        int ans = op1(s);
+
+        for (int i = 0; i < n; i++) {
+            ans = Math.min(ans, op1(s) + i);
+            s = s.substring(1) + s.charAt(0);
+        }
+
+        System.out.println(ans);
+    }
+}
+
+```
+
+**第二题**
+
+https://codefun2000.com/p/P1447
+
+塔子哥有一个特异数组，初始这些数组都是正整数。如果这个数组长度大于 1 ，就需要将最后两个数取出进行运算，并将运算结果再加到数组末尾。
+
+运算有加法和乘法两种。不同于正常的运算，运算得到的结果只会有一位，就是正常运算结果的最低位（个位）。
+
+例如，对于数组[1,3,1,4][1,3,1,4]，选择加法运算后，数组变为[1,3,5][1,3,5]，再接着选择第二种操作后，数组变为[1,5][1,5]。
+
+现在，塔子哥想问你，当特异数组只剩下一个数时，这个数为 0,1,2,...,90,1,2,...,9 的可能有多少，换句话说，让你输出这 1010 个数为最终剩余的一个数的方案数，答案对 109+7109+7 取模。
+
+==动态规划==
+
+```java
+import java.util.Scanner;
+
+public class Main {
+    static final int MOD = (int) 1e9 + 7;
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        int n = scanner.nextInt();
+        int[] stk = new int[n];
+        for (int i = 0; i < n; i++) {
+            stk[i] = scanner.nextInt();
+        }
+
+        int[] dp = new int[10];
+
+        // 特判 n=1 的情况
+        if (n == 1) {
+            if (stk[n - 1] < 10) {
+                dp[stk[n - 1]] = 1;
+            }
+            for (int i = 0; i < 10; i++) {
+                System.out.print(dp[i] + " ");
+            }
+            return;
+        }
+
+        dp[stk[n - 1] % 10] = 1;
+        n--;
+
+        while (n > 0) {
+            int t = stk[n - 1] % 10;
+            n--;
+            // 滚动数组优化，ndp 此时表示 dp[i][0~9] 状态
+            // dp数组 表示 dp[i+1][0~9] 状态
+            int[] ndp = new int[10];
+
+            for (int i = 0; i < 10; i++) {
+                ndp[(i + t) % 10] += dp[i];
+                ndp[(i + t) % 10] %= MOD;
+                ndp[i * t % 10] += dp[i];
+                ndp[i * t % 10] %= MOD;
+            }
+
+            // 最后更新 dp ，使得其由 dp[i+1] 状态转换为最新的 dp[i] 
+            dp = ndp;
+        }
+
+        for (int i = 0; i < 10; i++) {
+            System.out.print(dp[i] + " ");
+        }
+    }
+}
+
+```
+
+**第三题**
+
+https://codefun2000.com/p/P1448
+
+塔子哥喜欢玩王者，尤其擅长奕星，并且时常沉迷于用奕星的大招困住敌人。
+
+所以他设计了一个巨大棋局，棋盘中的格子只有两种可能，如果是 ′*X*′ 则表示这个格子可以作为棋盘的一个边角，如果是 ′.′′.′ 则表示不可以。
+
+塔子哥要按这个棋局的情况去进行奕星的大招练习，即选择四个为 ′*X*′ 的不同格子，这四个格子可以构成一个正方形棋盘。
+
+现在塔子哥想问你，可以获得多少个不同的正方形棋盘。
+
+两个棋盘相同当且仅当四个边角都可以完全对应上，否则就是不同的正方形棋盘。
+
+==枚举 + trick==
+
+```java
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int n = scanner.nextInt();
+        int m = scanner.nextInt();
+        char[][] mp = new char[n][m];
+        for (int i = 0; i < n; i++) {
+            String line = scanner.next();
+            for (int j = 0; j < m; j++) {
+                mp[i][j] = line.charAt(j);
+            }
+        }
+
+        int ans = 0;
+        for (int x1 = 0; x1 < n; x1++) {
+            for (int y1 = 0; y1 < m; y1++) {
+                if (mp[x1][y1] == 'X') {
+                    for (int x2 = 0; x2 < n; x2++) {
+                        for (int y2 = 0; y2 < m; y2++) {
+                            if (x2 == x1 && y2 == y1) {
+                                continue;
+                            }
+                            if (mp[x2][y2] == 'X') {
+                                int dx = x2 - x1;
+                                int dy = y2 - y1; // 按照向量顺时针或者逆时针
+                                int x3 = x1 - dy; // 求到第三第四个点
+                                int y3 = y1 + dx;
+                                int x4 = x3 + dx;
+                                int y4 = y3 + dy;
+                                if (0 <= x3 && x3 < n && 0 <= y3 && y3 < m && 0 <= x4 && x4 < n && 0 <= y4 && y4 < m && mp[x3][y3] == 'X' && mp[x4][y4] == 'X') {
+                                    ans++; // 符合要求就计数
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println(ans / 4); // 答案数除4
+    }
+}
+
+```
 
 
-# 米哈游8.13笔试
+
+# 大疆 8.13
+
+**第一题**
+
+解决下面无人机飞行规划问题：
+
+给定一个环形路线实施无人机作业，在路线上有n个充电站，编号0... n-1，i号充电桩可以给无人机提供charge[i] 单位的电量，无人机从i号充电桩出发完 成作业，并飞往i+1号充电的需要消耗 cost[i] 单位的的电量。
+
+假没无人机可以无限量充电。无人机从其中一个充电站完成充电出发(充电前初始电量为空)，给定正整数数组charge和cost，如果无人机可以顺时针绕环形路线一周完成作业并返回出发充电站，则返回出发时充电站的编号i，否则返回-1。
+
+注，为简化问题，如果存在解，输入数据可保证解唯一。测试用例输入格式为 (length of charge,charge,length of cost,cost).
+
+示例1. 输入: length of charge = 5, charge = [1,2,3,4,5], length of cost = 5, cost = [3,4,5,1,2] 输出: 3 解析:从3号充电站出发，电量为4;飞到4号充电站，电量为4-1+5=8;飞到0号充电站，电量为8-2+1=7;飞到1号充电站，电量为7-3+2=6;飞到2号充 电站，电量为6-4+3=5;飞回到3号充电站，电量5正好满足cost[2]
+
+示例2. 输入: length of charge = 3,charge = [2,3.4], length of cost = 3,cost = [3,4,3] 输出:-1 解析: 从0号或者号充电站出发，得到的电量都不能满定经下一站的电量。从2号充电站出发，电量为4:飞到0号充电站，电量为4-3+2=3;飞到1号充电站，电量为3-3+3=3;但是无法返回2号充电站， cost[1]>3.
+
+**思路与代码**
+
+贪心。
+
+此题为LC原题，134. 加油站
+
+大体的思想就是求出diff数组：diff[i] = gas[i] - cost[i]。
+
+1. 如果Σdiff < 0，则说明无论如何都可以环岛一周。
+2. 否则，求出diff的前缀和 pres，则最优点必然是  pres中的最小值的位置。【说明这个点出发后面可以先加油的量是最多的】
+
+```python
+class Solution:
+    def canCompleteCircuit(self, gas: List[int], cost: List[int]) -> int:
+        n = len(gas)
+        diff = [gas[i] - cost[i]  for i in range(n)]
+        if sum(diff) < 0: return -1
+        sum_ = list(accumulate(diff,initial=0))
+        return sum_.index(min(sum_)) 
+```
+
+**第二题**
+
+周末放假了，小疆计划骑着自己的电动车去航拍。小疆打开DiiFly上的去哪拍，找到了多个航拍点。为了规划路线，小疆提前了解了不同的航拍点之间的连通性和距离，同时还确认了每个航拍点充电桩的充电速率。小疆的电动车满电电量可行驶的距离为dis，单位km，该电动车每行驶1km消耗1单位电量，且耗费1min，一共N个航拍点，每个航拍点都有充电桩，使用二维数组paths标识两个航拍点的双向连通性和距离:[[航拍点编号，相邻航拍点编号，两个航拍点的距离]]，示例: [[0,1,3],[0,2,2]...],其中[0,1.3]就表示编号为0的航拍点和编号为1的航拍点相距3km，所有航拍点间的距离都小于dis，数组charge表示在每个航拍点充1单位电的花费的分钟数，示例: [2,10]，2表示编号为0的航拍点充电1单位耗时2分钟，10表示编号为1的航拍点充电1单位耗时10分钟。小疆当前在航拍点a，且电动车无电，请问小疆最少花费多少分钟数从所在的航拍点a抵达航拍点b。
+
+**输入描述**
+
+1、paths: 标识两个航拍点的双向连通性和距离 (先输入航拍点距离的二维数组长度，比如6 3，表示6组数据，每 组3个数值。再跟具体的数组内容) 2、dis: 电动车满电行驶里程 3、a: 航拍点a的编号 4、b: 航拍点b的编号 5、charge: 标识每个航拍点充1单位电的花费的分钟数 (先输入充电的数组长度，比如5。再跟数组内容，比如4 1 1 3
+
+**输出描述**
+
+最少花费的分钟数
+
+首先看题目不难发现是一个最短路问题，但是难点在于 **每个点可以冲若干格电**，那么问题可以转换为：
+
+**每个点不仅可以走到相邻的点，而且可以留在原点充电**
+
+那么对于每个状态我们只需要去枚举他的所有可能即可，当然有几个细节需要注意：
+
+1. 走到相邻的点要满足 **当前剩余电量是足够支撑的**
+2. 充电不能超过限制。
+
+==Dijkstra==
+
+```java
+import java.util.*;
+
+public class Main {
+
+    int[][] paths;
+    int n;
+    int dis, a, b;
+
+    int[] times;
+
+    List<List<int[]>> graph = new ArrayList<>();
+
+
+    void solve(){
+        Scanner sc = new Scanner(System.in);
+        int y = sc.nextInt();
+        int m = sc.nextInt();
+        paths = new int[y][m];
+        for (int i = 0; i < y; i++) {
+            paths[i][0] = sc.nextInt();
+            paths[i][1] = sc.nextInt();
+            paths[i][2] = sc.nextInt();
+        }
+
+        dis = sc.nextInt();
+        a = sc.nextInt();
+        b = sc.nextInt();
+
+        n = sc.nextInt();
+        times = new int[n];
+        for (int i = 0; i < n; i++) {
+            times[i] = sc.nextInt();
+        }
+
+        for (int i = 0; i < n; i++) graph.add(new LinkedList<>());
+
+        for (int[] path : paths) {
+            graph.get(path[0]).add(new int[]{path[1], path[2]});
+            graph.get(path[1]).add(new int[]{path[0], path[2]});
+        }
+
+        PriorityQueue<int[]> q = new PriorityQueue<>((a,b)->a[0]-b[0]);
+        q.add(new int[]{0, a, 0});
+        boolean[][] vst = new boolean[n+1][dis+1];
+
+        while (!q.isEmpty()) {
+            int[] arr = q.poll();
+            int d = arr[0], node = arr[1], pw = arr[2];
+            if (node == b) {
+                System.out.println(d);
+                return;
+            }
+            if (vst[node][pw]) continue;
+            vst[node][pw] = true;
+            for (int[] ints : graph.get(node)) {
+                int nextnode = ints[0], nextDis = ints[1];
+                if (nextDis <= pw && !vst[nextnode][pw - nextDis] ) {
+                    q.add(new int[]{d+nextDis, nextnode, pw - nextDis});
+                }
+            }
+
+            for (int i = 1 ; pw + i <= dis; i++) {
+                if (!vst[node][pw + i]) {
+                    q.add(new int[]{d+times[node] * i, node, pw+i});
+                }
+            }
+
+        }
+
+        System.out.println(-1);
+
+    }
+
+
+
+    public static void main(String[] args) {
+        new Main().solve();
+    }
+
+
+}
+```
+
+
+
+# 米哈游 8.13
 
 **第一题**一个n*m的矩阵，左下角坐标为（1,1），右上角坐标为（n,m）,主角每次可以移动一个格子，同时该矩阵有一个特性，上边界下边界相邻，左边界右边界相邻，即（x,1）与（x,m）相邻，现在给定主角坐标，角色A坐标，角色B坐标，判断主角最少需要走几步才能先到A再到B
 
@@ -400,6 +921,1038 @@ public class Test3 {
 }
 ```
 
+==动态规划==
+
+https://codefun2000.com/p/471/solution?sid=64d9b192b2a2f87ec9bda2d5
+
+```java
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        double p = sc.nextDouble();
+        double[] dp = new double[91];
+        double cnt = 0;  //记录总期望次数
+        for(int i = 1 ; i < 90 ; i ++) {
+            dp[i] = (1-dp[i-1]) * p;
+            cnt += dp[i] * i;
+            dp[i] += dp[i-1];  //前缀和
+        }
+        cnt += 90 * (1-dp[89]);  //i=90时特殊处理
+        System.out.printf("%.7f\n", cnt *1.5);
+    }
+}
+```
+
+
+
+# 阿里饿了么 8.17
+
+**第一题**
+
+小红在饿了么上面点了一个外卖，饥肠辘辘的她等骑手等得望眼欲穿。
+
+已知小红在时刻t1点了外卖，饿了么上面显示预计送达时间为t2，实际送达时间为t3。请你判断外卖是否超时？
+
+**输入描述**
+
+第一行输入一个正整数t，代表询问次数。接下来的3*t行，每 3 行代表一次询问：第一行为点外卖的时刻t1，第二行为预计送达时间t2，第三行为实际送达时间t3。
+
+保证骑手送外卖的预期花费时间和实际花费时间均不超过 2 小时。
+
+1<=t<=100
+
+**输出描述**
+
+输出t行。如果超时则输出"Yes"，否则输出"No"。
+
+```java
+import java.time.Duration;
+import java.util.Scanner;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+// 注意类名必须为 Main, 不要有任何 package xxx 信息
+public class Main {
+     public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int t = sc.nextInt();
+        sc.nextLine();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        for (int i = 0; i < t; i++) {
+            LocalTime t1 = LocalTime.parse(sc.nextLine(), formatter);
+            LocalTime t2 = LocalTime.parse(sc.nextLine(), formatter);
+            LocalTime t3 = LocalTime.parse(sc.nextLine(), formatter);
+            if (Math.abs(Duration.between(t2,t3).toHours()) <= 2) {
+                if (t3.isAfter(t2)) System.out.println("Yes");
+                else System.out.println("No");
+            }
+            else {
+                if (Math.abs(Duration.between(t1,t3).toHours()) >= Math.abs(Duration.between(t1,t2).toHours()))
+                    System.out.println("Yes");
+                else System.out.println("No");
+            }
+        }
+    }
+}
+```
+
+**第二题**
+
+小红的字符串构造
+
+小红拿到了一个字符串s，她准备构造一个和t长度相同的字符串t：满足以下条件：
+
+1.t的字符集和s的相同（去重后的，也就是说不考虑数量）
+
+2.t的每个位置的字符都和s不同。
+
+例如若 s="aabbc"，那么t可以构造为"cbaca"。
+
+你能帮帮小红吗？
+
+**输入描述**
+
+输入一个仅由小写字母组成的字符串s，长度不超过 200000。
+
+**输出描述**
+
+如果无解，请输出 -1。否则输出任意合法的字符串。
+
+==哈希表==
+
+```java
+import java.util.*;
+
+// 注意类名必须为 Main, 不要有任何 package xxx 信息
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        char[] s = sc.nextLine().toCharArray();
+
+        Set<Character> set = new HashSet<>();
+
+        for (char c : s) {
+            set.add(c);
+        }
+
+        char[] t = new char[s.length];
+
+        int pos = 0;
+        Set<Character> usd = new HashSet<>();
+        for (int j = 0 ; j < s.length; j++) {
+
+            if (usd.size() != set.size()) {
+                for (char c : set) {
+                    if (set.contains(c) && !usd.contains(c) && c != s[j]) {
+                        t[j] = c;
+                        usd.add(c);
+                        break;
+                    }
+                }
+            }
+            else {
+                for (char c : set) {
+                    if (set.contains(c) && c != s[j]) {
+                        t[j] = c;
+                        break;
+                    }
+                }
+            }
+
+        }
+        System.out.println(new String(t));
+    }
+}
+```
+
+**第三题**
+
+小红在第三新北林市的学园城送外卖，学园城中有非常多的学校，学园城里有一个美食街。小红每次会接一些同一个学校的订单，然后从美食街取餐出发，再骑车将外卖送到学校，最后回到美食街，以此往复。
+
+学园城有n个结点，m 条道路，美食街为1号结点，剩下的结点都是学校，保证学园城中所有结点连通。给出小红每次要送外卖的学校，请计算小红最少需要骑行的距离。
+
+**输入描述**
+
+第一行输入三个整数n,m,p(1<=n,m,p<=10^5)，分别表示结点数、道路数、送外卖次数。
+
+接下来 m行，每行输入三个整数u,v(1<=u,v<=n,u≠v) ,w(1<=w<=10^4) 表示结点u和v之间有一条长度为w的道路。
+
+最后一行输入q个整数表示每次送外卖的学校a(2<=ai<=n) 。
+
+**输出描述**
+
+输出一个整数表示答案。
+
+==Dijkstra算法==
+
+```java
+import java.util.*;
+
+// 注意类名必须为 Main, 不要有任何 package xxx 信息
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = sc.nextInt();
+        int m = sc.nextInt();
+        int q = sc.nextInt();
+
+        List<List<int[]>> graph = new ArrayList<>();
+
+        for (int i = 0; i <= n; i++) graph.add(new LinkedList<>());
+
+        for (int i = 0; i < m; i++) {
+            int a = sc.nextInt();
+            int b = sc.nextInt();
+            int w = sc.nextInt();
+            graph.get(a).add(new int[]{b,w});
+            graph.get(b).add(new int[]{a,w});
+        }
+
+        int[] Q = new int[q];
+
+        for (int i = 0; i < q; i++) {
+            Q[i] = sc.nextInt();
+        }
+
+        int[] dis = new int[n+1];
+        Arrays.fill(dis, Integer.MAX_VALUE);
+        boolean[] vst = new boolean[n+1];
+        dis[1] = 0;
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a,b)->a[0]-b[0]);
+        pq.add(new int[]{0, 1});
+        while (!pq.isEmpty()) {
+            int[] arr = pq.poll();
+            int d = arr[0], u = arr[1];
+            if (vst[u]) continue;
+            vst[u] = true;
+            for (int[] A: graph.get(u)) {
+                int v = A[0], w = A[1];
+                if (dis[v] > dis[u] + w) {
+                    dis[v] = dis[u] + w;
+                    pq.add(new int[]{dis[v], v});
+                }
+            }
+        }
+
+        long ans = 0;
+        for (int i : Q) {
+            ans += dis[i] *  2;
+        }
+        System.out.println(ans);
+    }
+}
+```
+
+
+
+# 阿里控股 8.26 
+
+**第一题**
+
+小红中心点，一个点水平方向上左右都存在其他点且垂直方向上上下都存在其他点，则该点为中心点。求中心点个数。
+
+思路一、直接暴力判断
+
+```c++
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<vector<int>> vec(n, vector<int>(2));
+    for (int i = 0; i < n; i++) {
+        cin >> vec[i][0];
+        cin >> vec[i][1];
+    }
+    int res = 0;
+    for (int i = 0; i < n; i++) {
+        int tmp = 0;
+        for (int j = 0; j < n; j++) {
+            if (j != i) {
+                if (vec[j][0] == vec[i][0] && vec[j][1] > vec[i][1]) { // 上边
+                    tmp = tmp | 1;
+                }
+                else if (vec[j][0] == vec[i][0] && vec[j][1] < vec[i][1]) { // 下边
+                    tmp = tmp | 2;
+                }
+                else if (vec[j][1] == vec[i][1] && vec[j][0] < vec[i][0]) { // 左边
+                    tmp = tmp | 4;
+                }
+                else if (vec[j][1] == vec[i][1] && vec[j][0] > vec[i][0]) { // 右边
+                    tmp = tmp | 8;
+                }
+
+                if (tmp == 15) {
+                    res++;
+                    break;
+                }
+            }
+        }
+    }
+    cout << res;
+}
+
+
+```
+
+思路二、建两个哈希表，一个哈希表key为x坐标，value为横坐标为key的所有纵坐标list；另一个哈希表key为y坐标，value为纵坐标为key的所有横坐标list。
+
+**第二题**
+
+小红打字
+
+```c++
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n, k;
+    cin >> n >> k;
+    string str;
+    string keys;
+    cin >> str >> keys;
+    vector<bool> isHave(26);
+    for (auto key : keys) {
+        isHave[key - 'a'] = true;
+    }
+    int res = 0;
+    int curLen = 0;
+    for (int i = 0; i < str.size(); i++) {
+        if (isHave[str[i] - 'a'] == true) {
+            curLen++;
+        }
+        else {
+            res += curLen * (curLen + 1) / 2;
+            curLen = 0;
+        }
+    }
+    if (curLen > 0) {
+        res += curLen * (curLen + 1) / 2;
+    }
+    cout << res;
+}
+```
+
+**第三题**
+
+一个字符串只含有a b c字符，如果一个字符串是和谐的，则该字符串不含长度超过1的回文连续子串。字符串的不和谐度定义为将该串变为和谐的字符串需要的最小操作个数（每一次操作可以将一个字符变成另外一个字符）
+
+思路一、暴力解决。和谐子串形式只能是abcabc acbacb bacbac bcabca cabcab cbacba 只能过60%
+
+```c++
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int main() {
+    int n, q;
+    cin >> n >> q;
+    string str;
+    cin >> str;
+    int l, r;
+    char ch;
+
+    vector<string> vec = { "abc", "acb", "bac", "bca", "cab", "cba" };
+
+    for (int i = 0; i < q; i++) {
+        cin >> l >> r >> ch;
+        for (int j = l - 1; j <= r - 1; j++) {
+            str[j] = ch;
+        }
+        int res = 0x3f3f3f3f;
+        for (int j = 0; j < vec.size(); j++) {
+            int curRes = 0;
+            for (int k = 0; k < n; k++) {
+                if (str[k] != vec[j][k % 3]) {
+                    curRes++;
+                }
+            }
+            res = min(res, curRes);
+        }
+        cout << res << "\n";
+    }
+    return 0;
+}
+```
+
+
+
+# 美团笔试 8.26（本人未参加）
+
+**第一题**
+
+小美种果树
+
+小美在手机上种果树，只要成熟了就可以领到免费的水果了。
+
+小美每天可以给果树浇水，果树的成长值加x。同时也可以给果树施肥，两次施肥至少需要间隔 2 天，果树的成长值加 y。果树成长值达到z就成熟了。
+
+小红想知道，最少需要多少天可以领到免费的水果。
+
+**输入描述**
+
+一行三个整数x,y,z，分别表示浇水的成长值，施肥的成长值，果树成熟的成长值。1<=x,y,z<=10^9
+
+**输出描述**
+
+一行一个整数，表示最少需要多少天可以领到免费的水果。
+
+直接求解即可。也可以考虑用二分答案方法。
+
+```python
+x,y,z = map(int, input().split())
+
+yu = z % (3*x + y)
+if yu == 0:
+    print(z //(3*x + y) * 3)
+else:
+    if yu < x + y:
+        print(z //(3*x + y) * 3 + 1)
+    elif yu < 2*x + y:
+        print(z // (3 * x + y) * 3 + 2)
+    else:
+        print(z // (3 * x + y) * 3 + 3)
+```
+
+**第二题**
+
+小美结账
+
+大家一起吃饭的时候，总是小红先付钱，然后大家再把钱转给小红。
+
+现在小红有n张账单，每张账单记录了有k个人一起吃饭，以及吃饭的消费c，现在小红需要计算每个人需要转给小红多少钱。
+
+由于大家都比较喜欢整数，所以大家每张账单会转给小红[c/k],[x]表示对x进行上取整。
+
+直接求解即可。
+
+```python
+import math
+n,m = map(int, input().split())
+
+res = [0]*(m + 1)
+
+for _ in range(n):
+    k,c = map(int, input().split())
+    people = [int(c) for c in input().split()]
+
+    for p in people:
+        res[p] += math.ceil(c/k)
+
+for i in range(1, m+1):
+    print(res[i], end=" ")
+```
+
+**第三题**
+
+小美的游戏
+
+==堆排序==
+
+```python
+import heapq
+
+n,k = map(int, input().split())
+a = [int(c) for c in input().split()]
+h = []
+for i in a:
+    heapq.heappush(h, -i)
+mod = (10**9) + 7
+sum_ = sum(a) % mod
+for _ in range(k):
+    x,y = -heapq.heappop(h), -heapq.heappop(h)
+    sum_ -= (x + y)
+    heapq.heappush(h, -x*y)
+    heapq.heappush(h, -1)
+    sum_ += x*y + 1
+    sum_ %= mod
+
+print(sum_)
+```
+
+**第四题**
+
+小美的数组重排
+
+小美有两个长度为n的数组a和b。
+
+小美想知道，能不能通过重排a数组使得对于任意1<=i<=n,1<=ai+bi<=m？
+
+将会有q次询问。
+
+输入描述
+
+第一行一个整数q(1<=q<=30)。表示询问次数。
+
+对于每一个询问：
+
+第一行输入两个整数n,m(1<=n,m<=500)
+
+第二行输入n个整数ai(-500<=ai<=500)。
+
+第三行输入n个整数bi(-500<=bi<=500)。
+
+**输出描述**
+
+q行，每行输出一个字符串，如果能通过重排满足条件则输出"Yes"(不含引号),否则输出"No"。
+
+思维题
+
+要想满足题目的要求，对于数组a的最小值，如果跟数组b的最大值进行合并，假设结果不满足，那就肯定是不可能的了，否则可以考虑次小值和次大值进行分配，以此类推，只需要将a数组正向排序，b数组逆向排序即可。
+
+```python
+
+q = int(input())
+
+def func(n, m, a, b):
+    for i in range(n):
+        if 1 <= a[i] + b[i] <= m: continue
+        else: return False
+    return True
+
+for _ in range(q):
+    n, m = map(int, input().split())
+    a = [int(c) for c in input().split()]
+    b = [int(c) for c in input().split()]
+
+    a.sort()
+    b.sort(reverse=True)
+
+    if func(n, m, a, b): print("Yes")
+    else: print("No")
+```
+
+**第五题**
+
+平均数为k的最长连续子数组
+
+给定n个正整数组成的数组，求平均数正好等于k 的最长连续子数组的长度。
+
+**输入描述**
+
+第一行输入两个正整数n和k，用空格隔开。
+
+第二行输入n个正整数ai，用来表示数组。
+
+1<=n<=200000
+
+1<=k,ai<=10^9
+
+**输出描述**
+
+如果不存在任何一个连续子数组的平均数等于k，则输出-1。
+
+否则输出平均数正好等于k的最长连续子数组的长度。
+
+==前缀和 哈希表==
+
+思维题+哈希表模拟。
+
+平均数比较难处理，我们不妨将原数组中每个元素都-k，这样问题转换成找到和为0的最长子数组。
+
+```python
+n,k = map(int, input().split())
+a = [int(c) - k for c in input().split()]
+
+res = 0
+occ = {}
+occ[0] = -1
+
+tmp = 0
+
+for i in range(n):
+    tmp += a[i]
+    if tmp in occ:
+        res = max(res, i - occ[tmp])
+    if tmp not in occ: occ[tmp] = i
+
+print(res)
+```
+
+
+
+# 阿里国际 8.28
+
+**第一题**
+
+给定一个只包含小写字母的字符串，可以删除特定字符，使得偶数位置的字符等于前一个位置的字符，求保留的最大长度。例如abacc，可以得到aacc，最大长度为4。
+
+可以用哈希表和集合思想来做。
+
+以按照段划分，abcedfa | xyznpx |   最后答案就是 n - (2 * x)，n = len(str), x表示有多少对(类似aa/bb)这样的形式，最后想到了，用一个set双指针维护下过了
+
+**第二题**
+
+二分查找
+
+**第三题**
+
+一个有向图，其无向图构成环，可以将边的方向进行反转，其操作量为权值大小，求解让有向图构成一个环的最小操作数。
+
+正向遍历有向图以及反向遍历有向图，求两者最小值即可。
+
+# 得物 8.29
+
+**第一题**
+
+给定字符串，求解该字符串中长度为k的连续字符串为回文串的个数。
+
+暴力即可。
+
+**第二题**
+
+一排街道需要建造房子，每个房子高度最小为1，且相邻两个房子的高度差不超过1，在给定最大房子高度和的前提下，求解所有房子中可能的最大高度是多少。
+
+二分答案即可。
+
+```java
+import java.util.Scanner;
+
+public class Test2 {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int n = in.nextInt(), m = in.nextInt(), x = in.nextInt();
+        System.out.println(findMaxBuilding(n, m, x));   
+    }
+
+    public static int findMaxBuilding(int n, int m, int x) {
+        int left = 1, right = m - n + 1;
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            if (check(mid, n, m, x)) right--;
+            else left++;
+        }
+        return right;
+    }
+    //private static boolean check(long h, int n, int m, int x) 
+    private static boolean check(long h, long n, long m, long x) {
+        long end1 = h - (x - 1), end2 = h - (n - x);
+        long res = 0;
+        if (end1 >= 1) {
+            res += (h + end1)  * x / 2;
+        } else {
+            res += (h + 1)  * h / 2 + (x - h);
+        }
+
+        if (end2 >= 1) {
+            res += (h + end2) * (n - x + 1) / 2;
+        } else {
+            res += (h + 1)  * h / 2 + (n - x + 1 - h);
+        }
+
+        res -= h;
+        return (int)res > m;
+    }
+}
+```
+
+
+
+# 阿里淘天1688 8.29
+
+**第一题**
+
+给定相同长度的数组a和b，对于i < j < k, a[i] < a[j] <a[k]，求b[i] + b[j] +b[k]的最大值
+
+无脑暴力即可，但有些用例会超时，此时可以做些优化，可以先保留b数组中的最大值，如果b[i]+b[j] +max(b)小于之前求解的最大值，那么直接跳过下一次循环就行。
+
+**第二题**
+
+忘了，记得用动态规划就行
+
+**第三题**
+
+树打挂，挂有树形，水或火，水和火直接相连可以打掉，求最大消灭的挂个数。
+
+树形DP和贪心，和美团笔试贪心题类似，也和打家劫舍III类似。
+
+# 华为机试 8.30（本人未参加）
+
+**第二题**
+
+在无线通信设备中通常使用超外差接收机，超外差接收机是利用本地产生的振荡波与输入信号混频，将输入信号频率变换为某个预先确定的频率的方法。也就是说，信号通过一个混频器后，频率就会搬移一个数值。在项目中由于要节省器件，混频器需要尽可能的共享，我们设计了二又树型的混频器组，可以同时把信号搬移到不同的频率上。
+
+二叉树为完全二叉树。我们给定二叉树的层数和从根节点开始到每个子节点的频率搬移总和，输出二叉树。
+
+规则：节点的值为它的所有叶子结点的目标频率最大最小值的平均值（非整数向下取整）减去它所有父节点的总和。
+
+==DFS 二叉树遍历==
+
+```java
+n = int(input())
+
+leaves = [int(c) for c in input().split()]
+
+tree = [0] * (n*2)
+
+vals = [0] * (n*2)
+
+target = {}
+
+def dfs(node):
+    if node >= n - 1:
+        target[node] = [leaves[node-n+1],leaves[node-n+1]]
+        return target[node]
+
+    l,r = dfs(2*node + 1), dfs(2*node + 2)
+    target[node] = [max(l+r), min(l+r)]
+    return target[node]
+
+dfs(0)
+
+def dfs2(node, sum):
+    if node >= 2 * n - 1: return
+    vals[node] = (target[node][0] + target[node][1]) // 2 - sum
+    dfs2(node*2+1, sum + vals[node])
+    dfs2(node*2+2, sum+ vals[node])
+
+dfs2(0, 0)
+
+
+for i in range(2*n-1):
+    print(vals[i], end=" ")
+```
+
+**第三题**
+
+系统由n个任务组成，任务运行有依赖关系，前序任务执行完毕才可以启动后续任务。任务在启动前申请内存，执行完毕后释放，内存释放后可用于其他任务使用。每个任务的运行时间相等。请计算系统所有任务执行所需要的最小内存。
+
+类似于leetcode207课程表
+
+==拓扑排序==
+
+```python
+from collections import deque, defaultdict
+
+n = int(input())
+mem = [int(c) for c in input().split()]
+
+graph = defaultdict(list)
+indegre = [0]*n
+
+for i in range(n):
+    tmp = [int(c) for c in input().split()]
+    for j, s in enumerate(tmp):
+        if s == 1:
+            graph[j].append(i)
+            indegre[i] += 1
+
+
+q = deque()
+
+for i in range(n):
+    if indegre[i] == 0:
+        q.append(i)
+
+res = 0
+
+while q:
+    size = len(q)
+    cur = 0
+    for _ in range(size):
+        node = q.popleft()
+        cur += mem[node]
+        for next in graph[node]:
+            indegre[next] -= 1
+            if indegre[next] == 0:
+                q.append(next)
+    res = max(res, cur)
+
+print(res)
+```
+
+# 微众笔试 9.3
+
+**第一题**
+
+切糖果，从头开始切，切的部分不含重复元素，求最大长度。(注意从头开始切，不是从中间切)
+
+==哈希表==
+
+```java
+import java.util.*;
+
+public class Test1 {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int n = in.nextInt();
+        int[] taste = new int[n];
+        for (int i = 0; i < n; i++) taste[i] = in.nextInt();
+        System.out.println(getRes(taste));
+    }
+
+    public static int getRes(int[] taste) {
+        Set<Integer> visit = new HashSet<>();
+        for (int i = 0; i < taste.length; i++) {
+            if (visit.contains(taste[i])) return i;
+            visit.add(taste[i]);
+        }
+        return taste.length;
+    }
+}
+```
+
+**第二题**
+
+输入一个n，代表数组长度
+接下来输入一个数组nums，然后你可以任意给数组元素加值，加多少都行
+问：最少加多少（总和），能够让数组没有重复元素
+
+==哈希表==
+
+```java
+import java.util.*;
+
+public class Test2 {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int n = in.nextInt();
+        int[] a = new int[n];
+        for (int i = 0; i < n;  i++) a[i] = in.nextInt();
+        System.out.println(getRes(a));
+    }
+
+    public static int getRes(int[] a) {
+        int res = 0, left = 0;
+        Arrays.sort(a);
+        Set<Integer> set = new HashSet<>();
+        for (int num : a) set.add(num);
+        if (a[a.length - 1] - a[0] + 1 <= a.length) left = a[a.length - 1];
+        for (int i = 1; i < a.length; i++) {
+            if (a[i] == a[i - 1]) {
+                left = Math.max(a[i], left) + 1;
+                while (set.contains(left)) {
+                    left++;
+                }
+                res += left - a[i];
+                set.add(left);
+            }
+        }
+        return res;
+    }
+}
+```
+
+==贪心==
+
+先排序
+
+然后从第2个元素开始遍历到最后，只要这个元素小于等于上一个元素，就让它等于上一个元素+1（贪心），然后res+=(更新值减去原值）
+
+==其他==
+
+```c++
+#include <bits/stdc++.h>
+
+using namespace std;
+
+
+int minn(vector<int>& nums) {
+    sort(nums.begin(), nums.end());
+    int ans = 0, taken = 0;
+    for (int i = 1; i < (nums.size(); ++i) {
+        if (nums[i - 1] == nums[i]) {
+            taken++;
+                ans -= nums[i];
+        }
+        else {
+            int re = min(taken, nums[i] - nums[i - 1] - 1);
+                ans += re * (re + 1) / 2 + re * nums[i - 1];
+                taken -= re;
+        }
+    }
+
+    if (nums.size() > 0) {
+        ans += taken * (taken + 1) / 2 + taken * nums.back();
+    }
+
+    return ans;
+}
+
+int main()
+{
+ int n;
+    scanf("%d", &n);
+    vector<int> arr(n);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &arr[i]);
+    }
+    printf("%d", minn(arr));
+}
+```
+
+
+
+**第三题**
+
+u v的最大公约数为1，给定长度为n的数组nums，求nums中满足平均值为u/v的连续子数组的个数
+
+==暴力遍历==
+
+```java
+import java.util.*;
+
+public class Test3 {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int n = in.nextInt(), u = in.nextInt(), v = in.nextInt();
+        int[] nums = new int[n];
+        long sum = 0, res = 0;
+        for (int i = 0; i < n; i++) nums[i] = in.nextInt();
+        for (int len = 1; len <= n; len++) {
+            if (len % v != 0) continue;
+            sum = len / v * u;
+            long temp = 0;
+            for (int i = 0; i < len; i++) temp += nums[i];
+            if (temp == sum) res++;
+            for (int i = len; i < n; i++) {
+                temp += nums[i] - nums[i - len];
+                if (temp == sum) res++;
+            }
+        }
+        System.out.println(res);
+    }
+}
+
+```
+
+在求给定长度满足条件的子数组个数时，可以用前缀和的方式
+
+==前缀和==
+
+```c++
+#include<bits/stdc++.h>
+
+using namespace std;
+typedef long long ll;
+map<int,int> cnt;
+int n,u,v;
+void solve(vector<int> arr){
+    cnt[u]=1;
+    int res=0,s=0;
+    for(int i=0;i<n;i++){
+        s+=arr[i];
+        res+=cnt[v*s-u*i]++;
+    }
+    cout<<res<<endl;
+}
+
+int main(){
+    cin>>n>>u>>v;
+    vector<int> a(n);
+    for(int &t:a) cin>>t;
+    solve(a);
+}
+```
+
+# 招商 9.4
+
+驾校教练可分配时间是5-19点，有n个同学预约时间，包括开始时间和结束时间，求解驾校教练最多能给驾校同学安排训练时间
+
+==贪心 排序==
+
+```java
+import java.util.*;
+
+public class Test1 {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int n = in.nextInt();
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            int start = in.nextInt(), end = in.nextInt();
+            map.computeIfAbsent(start, key -> new ArrayList<>()).add(end);
+        }
+        for (Map.Entry<Integer, List<Integer>> entry : map.entrySet()) {
+            Collections.sort(entry.getValue());
+        }
+        
+        int res = 0, end = 19, start = 5;
+        while (start <= end) {
+            if (!map.containsKey(start)) {
+                start++;
+                continue;
+            }
+            end = Math.min(end, map.get(start).get(0));
+            int temp = 0, i = start;
+            while (i <= 19) {
+                if (!map.containsKey(i)) {
+                    i++;
+                    continue;
+                }
+                temp++;
+                i = map.get(i).get(0);
+            }
+            res = Math.max(res, temp);
+            start++;
+        }
+        System.out.println(res);
+    }
+}
+```
+
+# 腾讯笔试 9.15
+
+**第四题**
+
+给定查询次数T和每次查询的字符串数组的长度n，判断字符串数组中两个字符串是否存在匹配的选择字符串。
+
+==集合==
+
+```java
+import java.util.*;
+
+public class Test4 {
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int T = in.nextInt();
+        for (int i = 0; i < T; i++) {
+            int n = in.nextInt();
+            in.nextLine();
+            String[] strs = new String[n];
+            for (int j = 0; j < n; j++) 
+                strs[j] = in.nextLine();
+            System.out.println(getRes(strs) ? "YES" : "NO");
+        }
+    }
+
+    public static boolean getRes(String[] strs) {
+        if (strs.length == 0) return false;
+        Set<String> set = new HashSet<>();
+        for (String str : strs) {
+            Set<String> tmpSet = new HashSet<>();
+            for (int i = 1; i <= str.length(); i++) {
+                String tmp = str.substring(i, str.length()) + str.substring(0, i);
+                if (set.contains(tmp)) return true;
+                tmpSet.add(tmp);
+            }
+            set.addAll(tmpSet);
+        }
+        return false;
+    }
+}
+
+```
+
+**第五题**
+
+从左至右有n个点，n个点在不同的位置上且1表示蓝点、0表示红点，可以选择一下操作。
+
+操作1、选择红点，对其进行加一或者减一；
+操作2、选择蓝点，将其变为红点。
+
+给定k，最多进行操作2。问最少进行多少个操作1让任意红点之间不包括蓝点。
+
+
+
+我们先不考虑蓝变红的情况，那么所有蓝点都不动。这样要让红点指间无蓝点的话必须把红点都挪到一个区间里，区间左右端点必须是蓝点或者正负无穷，且区间内没有蓝点。解这个简化的问题直接枚举每一个区间即可，用前缀和优化一下不然会tle。那么我们接着考虑k次蓝变红的操作，与前面不同的是，这里的区间中可以包含k个蓝点，因为我们可以把这k个都变成红，所以你只需要以k为间隔枚举区间即可。
+
 # Acwing 165 小猫爬山
 
 ==DFS 回溯 剪枝==
@@ -492,7 +2045,2620 @@ public class Main {
 }
 ```
 
+# 华为笔试9.20
 
+**第二题*
+
+==BFS==
+
+```java
+import java.util.*;
+
+public class Test2 {
+    static boolean[][] used;
+    static int res = Integer.MAX_VALUE;
+    static int temp = 0;
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int m = in.nextInt(), n = in.nextInt();
+        int[][] nums = new int[m][n];
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < n; j++) 
+                nums[i][j] = in.nextInt();
+        
+        for (int i = 0; i < m; i++) {
+            temp = 0;
+            used = new boolean[m][n];
+            if (nums[i][0] == 1) bfs(nums, i, 0);
+        }
+        System.out.println(res == Integer.MAX_VALUE ? -1 : res);
+    }
+
+    private static void bfs(int[][] nums, int row, int column) {
+        int[][] dirs = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+        Deque<int[]> queue = new LinkedList<>();
+        queue.offer(new int[]{0, row, column});
+        used[row][column] = true;
+        while (!queue.isEmpty()) {
+            int[] a = queue.poll();
+            int d = a[0], x = a[1], y = a[2];
+            if (y == nums[0].length - 1) res = Math.min(res, d);
+            for (int[] dir : dirs) {
+                int nx = x + dir[0], ny = y + dir[1];
+                if (!check(nums, nx, ny)) continue;
+                used[nx][ny] = true;
+                queue.offer(new int[]{d + 1, nx, ny});
+            }
+        }
+    }
+
+    private static boolean check(int[][] nums, int row, int column) {
+        if (row < 0 || column < 0 || row == nums.length || column == nums[0].length || used[row][column] || nums[row][column] == 0 ) return false;
+        return true;
+    }
+}
+
+```
+
+==DFS 记忆化==
+
+```java
+import java.util.*;
+
+public class Test2_1 {
+    static int[][] visited;
+    static int res = Integer.MAX_VALUE;
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        int m = in.nextInt(), n = in.nextInt();
+        int[][] nums = new int[m][n];
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < n; j++) 
+                nums[i][j] = in.nextInt();
+        
+        visited = new int[m][n];
+        for (int i = 0; i < m; i++) {
+            visited[i][0] = dfs(nums, i, 0, 0);
+        }
+        System.out.println(res == Integer.MAX_VALUE ? -1 : res);
+    }
+
+    private static int  dfs(int[][] nums, int row, int column, int temp) {
+        if (!check(nums, row, column)) return Integer.MAX_VALUE;
+        if (visited[row][column] != 0) return visited[row][column];
+        if (column == nums[0].length - 1) {
+            res = Math.min(res, temp);
+            return temp;
+        }
+        int ans = Integer.MAX_VALUE;
+        nums[row][column] = 0;
+        ans = Math.min(ans, dfs(nums, row - 1, column, temp + 1));
+        ans = Math.min(ans, dfs(nums, row + 1, column, temp + 1));
+        ans = Math.min(ans, dfs(nums, row, column - 1, temp + 1));
+        ans = Math.min(ans, dfs(nums, row, column + 1, temp + 1));
+        nums[row][column] = 1;
+        return ans;
+    }
+
+    private static boolean check(int[][] nums, int row, int column) {
+        if (row < 0 || column < 0 || row == nums.length || column == nums[0].length || nums[row][column] == 0) return false;
+        return true;
+    }
+}
+
+```
+
+
+
+# 背包问题
+
+https://oi-wiki.org/dp/knapsack/#%E5%88%86%E7%BB%84%E8%83%8C%E5%8C%85
+https://programmercarl.com/%E8%83%8C%E5%8C%85%E7%90%86%E8%AE%BA%E5%9F%BA%E7%A1%8001%E8%83%8C%E5%8C%85-1.html#%E7%AE%97%E6%B3%95%E5%85%AC%E5%BC%80%E8%AF%BE
+
+## 01背包
+
+有n件物品和一个最多能背重量为w 的背包。第i件物品的重量是weight[i]，得到的价值是value[i] 。**每件物品只能用一次**，求解将哪些物品装入背包里物品价值总和最大。
+
+==动态规划==
+
+```java
+public class BagProblem {
+    public static void main(String[] args) {
+        int[] weight = {1,3,4};
+        int[] value = {15,20,30};
+        int bagSize = 4;
+        testWeightBagProblem(weight,value,bagSize);
+    }
+
+    /**
+     * 动态规划获得结果
+     * @param weight  物品的重量
+     * @param value   物品的价值
+     * @param bagSize 背包的容量
+     */
+    public static void testWeightBagProblem(int[] weight, int[] value, int bagSize){
+
+        // 创建dp数组
+        int goods = weight.length;  // 获取物品的数量
+        int[][] dp = new int[goods][bagSize + 1];
+
+        // 初始化dp数组
+        // 创建数组后，其中默认的值就是0
+        for (int j = weight[0]; j <= bagSize; j++) {
+            dp[0][j] = value[0];
+        }
+
+        // 填充dp数组
+        for (int i = 1; i < weight.length; i++) {
+            for (int j = 1; j <= bagSize; j++) {
+                if (j < weight[i]) {
+                    /**
+                     * 当前背包的容量都没有当前物品i大的时候，是不放物品i的
+                     * 那么前i-1个物品能放下的最大价值就是当前情况的最大价值
+                     */
+                    dp[i][j] = dp[i-1][j];
+                } else {
+                    /**
+                     * 当前背包的容量可以放下物品i
+                     * 那么此时分两种情况：
+                     *    1、不放物品i
+                     *    2、放物品i
+                     * 比较这两种情况下，哪种背包中物品的最大价值最大
+                     */
+                    dp[i][j] = Math.max(dp[i-1][j] , dp[i-1][j-weight[i]] + value[i]);
+                }
+            }
+        }
+
+        // 打印dp数组
+        for (int i = 0; i < goods; i++) {
+            for (int j = 0; j <= bagSize; j++) {
+                System.out.print(dp[i][j] + "\t");
+            }
+            System.out.println("\n");
+        }
+    }
+}
+```
+
+==动态规划 滚动数组==
+
+```java
+public static void main(String[] args) {
+        int[] weight = {1, 3, 4};
+        int[] value = {15, 20, 30};
+        int bagWight = 4;
+        testWeightBagProblem(weight, value, bagWight);
+    }
+
+    public static void testWeightBagProblem(int[] weight, int[] value, int bagWeight){
+        int wLen = weight.length;
+        //定义dp数组：dp[j]表示背包容量为j时，能获得的最大价值
+        int[] dp = new int[bagWeight + 1];
+        //遍历顺序：先遍历物品，再遍历背包容量
+        for (int i = 0; i < wLen; i++){
+            for (int j = bagWeight; j >= weight[i]; j--){
+                dp[j] = Math.max(dp[j], dp[j - weight[i]] + value[i]);
+            }
+        }
+        //打印dp数组
+        for (int j = 0; j <= bagWeight; j++){
+            System.out.print(dp[j] + " ");
+        }
+    }
+```
+
+## 完全背包
+
+有N件物品和一个最多能背重量为W的背包。第i件物品的重量是weight[i]，得到的价值是value[i] 。**每件物品都有无限个（也就是可以放入背包多次）**，求解将哪些物品装入背包里物品价值总和最大。
+
+**完全背包和01背包问题唯一不同的地方就是，每种物品有无限件**。
+
+==动态规划 01背包==
+
+```java
+//先遍历物品，再遍历背包
+private static void testCompletePack(){
+    int[] weight = {1, 3, 4};
+    int[] value = {15, 20, 30};
+    int bagWeight = 4;
+    int[] dp = new int[bagWeight + 1];
+    for (int i = 0; i < weight.length; i++){ // 遍历物品
+        for (int j = weight[i]; j <= bagWeight; j++){ // 遍历背包容量
+            dp[j] = Math.max(dp[j], dp[j - weight[i]] + value[i]);
+        }
+    }
+    for (int maxValue : dp){
+        System.out.println(maxValue + "   ");
+    }
+}
+
+//先遍历背包，再遍历物品
+private static void testCompletePackAnotherWay(){
+    int[] weight = {1, 3, 4};
+    int[] value = {15, 20, 30};
+    int bagWeight = 4;
+    int[] dp = new int[bagWeight + 1];
+    for (int i = 1; i <= bagWeight; i++){ // 遍历背包容量
+        for (int j = 0; j < weight.length; j++){ // 遍历物品
+            if (i - weight[j] >= 0){
+                dp[i] = Math.max(dp[i], dp[i - weight[j]] + value[j]);
+            }
+        }
+    }
+    for (int maxValue : dp){
+        System.out.println(maxValue + "   ");
+    }
+}
+```
+
+## 多重背包
+
+有N种物品和一个容量为V 的背包。第i种物品最多有Mi件可用，每件耗费的空间是Ci ，价值是Wi 。求解将哪些物品装入背包可使这些物品的耗费的空间 总和不超过背包容量，且价值总和最大。
+
+==动态规划 01背包==
+
+```java
+public void testMultiPack1(){
+    // 版本一：改变物品数量为01背包格式
+    List<Integer> weight = new ArrayList<>(Arrays.asList(1, 3, 4));
+    List<Integer> value = new ArrayList<>(Arrays.asList(15, 20, 30));
+    List<Integer> nums = new ArrayList<>(Arrays.asList(2, 3, 2));
+    int bagWeight = 10;
+
+    for (int i = 0; i < nums.size(); i++) {
+        while (nums.get(i) > 1) { // 把物品展开为i
+            weight.add(weight.get(i));
+            value.add(value.get(i));
+            nums.set(i, nums.get(i) - 1);
+        }
+    }
+
+    int[] dp = new int[bagWeight + 1];
+    for(int i = 0; i < weight.size(); i++) { // 遍历物品
+        for(int j = bagWeight; j >= weight.get(i); j--) { // 遍历背包容量
+            dp[j] = Math.max(dp[j], dp[j - weight.get(i)] + value.get(i));
+        }
+        System.out.println(Arrays.toString(dp));
+    }
+}
+
+public void testMultiPack2(){
+    // 版本二：改变遍历个数
+    int[] weight = new int[] {1, 3, 4};
+    int[] value = new int[] {15, 20, 30};
+    int[] nums = new int[] {2, 3, 2};
+    int bagWeight = 10;
+
+    int[] dp = new int[bagWeight + 1];
+    for(int i = 0; i < weight.length; i++) { // 遍历物品
+        for(int j = bagWeight; j >= weight[i]; j--) { // 遍历背包容量
+            // 以上为01背包，然后加一个遍历个数
+            for (int k = 1; k <= nums[i] && (j - k * weight[i]) >= 0; k++) { // 遍历个数
+                dp[j] = Math.max(dp[j], dp[j - k * weight[i]] + k * value[i]);
+            }
+            System.out.println(Arrays.toString(dp));
+        }
+    }
+}
+```
+
+## 分组背包
+
+[2218. 从栈中取出 K 个硬币的最大面值和](https://leetcode.cn/problems/maximum-value-of-k-coins-from-piles/)
+
+一张桌子上总共有 `n` 个硬币 **栈** 。每个栈有 **正整数** 个带面值的硬币。
+
+每一次操作中，你可以从任意一个栈的 **顶部** 取出 1 个硬币，从栈中移除它，并放入你的钱包里。
+
+给你一个列表 `piles` ，其中 `piles[i]` 是一个整数数组，分别表示第 `i` 个栈里 **从顶到底** 的硬币面值。同时给你一个正整数 `k` ，请你返回在 **恰好** 进行 `k` 次操作的前提下，你钱包里硬币面值之和 **最大为多少** 。
+
+==动态规划 01背包==
+
+```java
+class Solution {
+    public int maxValueOfCoins(List<List<Integer>> piles, int k) {
+        /*
+        dp五部曲(转化为完全背包问题):
+        这里的每一个栈都可以看成是一个分组,例如栈1:pile=[1,2,3],preSum=[1,3,6]
+        也就是说组别1内有3件物品,其体积分别为:1,2,3;价值分别为1,3,6
+        而每组中的物品只能取出一件,在背包容量有限的情况下最终目标要使得物品价值最大化!
+        1.状态定义:dp[i][j]为考虑[0,i]组,背包容量为j时,能获取物品价值的最大值
+        2.状态转移:
+            参考分组背包的技巧,每次抉择范围为选第i组的哪个物品?其中包含一种特殊情况(m=0代表不选->dp[i-1][j])
+            dp[i][j]=max(dp[i][j],dp[i-1][j-v[i][m]]+w[i][m]),m∈[0,pile.size()]
+            这里的v[i][m]指第i组内的第k个物品的体积;w[i][m]指第i组内的第m个物品的价值
+            通过3层for循环滚动求出dp[i][j]的正确转移值,就是第i组要选择的物品
+        3.初始化:
+            3.1 dp[i][0]=0->容量为0的情况
+            3.2 dp[0][j]=preSum(piles[0][j])->只考虑第0组物品
+        4.遍历顺序:显然是正序遍历
+        5.返回形式:返回dp[pilesNum-1][k]
+        时间复杂度:O(N*K*M),空间复杂度:O(N*K)
+        */
+        // 组数
+        int pilesNum = piles.size();
+        int[][] dp = new int[pilesNum][k + 1];
+        // 初始化
+        for(int j = 1; j <= piles.get(0).size() && j <= k; j++) {
+            dp[0][j] = dp[0][j - 1] + piles.get(0).get(j - 1);
+        }
+        // 遍历每一组物品i∈[1,pilesNum-1]
+        for(int i = 1; i <= pilesNum - 1; i++) {
+            // 遍历每种背包容量j∈[1,k]
+            for(int j = 1; j <= k; j++) {
+                int sum = 0;
+                // 遍历第i组的每件物品m∈[0,piles.get(i).size()]
+                // 其中m=0代表不选第i组任何物品,此时sum=0,自动继承dp[i-1][j]
+                // m=piles.get(i).size()表示这个组别的数字全拿了
+                for(int m = 0; m <= piles.get(i).size(); m++) {
+                    // 计算出第k组物品的第m个物品的价值
+                    // 从m=1开始计算,因为m=0相当于不选第i组任何物品,sum=0,dp[i][j]继承自dp[i-1][j]
+                    if(m >= 1) sum += piles.get(i).get(m - 1);
+                    // 若当前背包容量还装得下第k组物品的第m个物品(体积为m)->滚动获取最大值
+                    // 拿之前的or拿现在的->取大的值
+                    if(j >= m) dp[i][j] = Math.max(dp[i][j], dp[i - 1][j - m] + sum);  
+                }
+            }
+        }
+        // 最后返回的是:考虑[0,pilesNum-1]中,背包容量为k的价值最大值(和的最大值)
+        return dp[pilesNum - 1][k];
+    }
+}
+```
+
+==动态规划 01背包 滚动数组==
+
+```java
+class Solution {
+    public int maxValueOfCoins(List<List<Integer>> piles, int k) {
+        var f = new int[k + 1];
+        var sumN = 0;
+        for (var pile : piles) {
+            var n = pile.size();
+            for (var i = 1; i < n; ++i)
+                pile.set(i, pile.get(i) + pile.get(i - 1)); // pile 前缀和
+            sumN = Math.min(sumN + n, k); // 优化：j 从前 i 个栈的大小之和开始枚举（不超过 k）
+            for (var j = sumN; j > 0; --j)
+                for (var w = 0; w < Math.min(n, j); ++w)
+                    f[j] = Math.max(f[j], f[j - w - 1] + pile.get(w)); // w 从 0 开始，物品体积为 w+1
+        }
+        return f[k];
+    }
+}
+```
+
+# 回溯算法
+
+需要去重 可以考虑排序比较nums[i] nums[i - 1]或者哈希表(适用于不方便使用排序的场景)
+全排列 可以考虑交换或者used数组（used数组一般针对是每次backtrack中都是从头开始搜索的情况）
+
+## 组合问题
+
+### Leecode[77. 组合](https://leetcode.cn/problems/combinations/)
+
+==回溯==
+
+```java
+class Solution {
+    List<List<Integer>> res = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> combine(int n, int k) {
+        backtrack(n, 1, k);
+        return res;
+    }
+
+    private void backtrack(int n, int startIndex, int k) {
+        if (path.size() == k) {
+            res.add(new ArrayList<>(path));
+            return ;
+        }
+
+        for (int i = startIndex; i <= n; i++) {
+            path.add(i);
+            backtrack(n, i + 1, k);
+            path.remove(path.size() - 1);
+        }
+    }
+}
+```
+
+==回溯 剪枝==
+
+```java
+class Solution {
+    List<List<Integer>> res = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> combine(int n, int k) {
+        backtrack(n, 1, k);
+        return res;
+    }
+
+    private void backtrack(int n, int startIndex, int k) {
+        if (path.size() == k) {
+            res.add(new ArrayList<>(path));
+            return ;
+        }
+
+        for (int i = startIndex; i <= n + 1 - (k - path.size()); i++) {
+            path.add(i);
+            backtrack(n, i + 1, k);
+            path.remove(path.size() - 1);
+        }
+    }
+}
+```
+
+### Leetcode[216. 组合总和 III](https://leetcode.cn/problems/combination-sum-iii/)
+
+==回溯==
+
+```java
+class Solution {
+    private List<Integer> path = new ArrayList<>();
+    private List<List<Integer>> res = new ArrayList<>();
+    private int sum;
+
+    public List<List<Integer>> combinationSum3(int k, int n) {
+        backtrack(k, 1, n);
+        return res;
+    }
+
+    private void backtrack(int k, int startIndex, int n) {
+        
+        if (path.size() == k) {
+            if (sum == n) res.add(new ArrayList<>(path));
+            return;
+        }
+        
+        for (int i = startIndex; i <= 9 - (k - path.size()) + 1; i++) {
+            if (sum + i > n) break;
+            sum += i;
+            path.add(i);
+            backtrack(k, i + 1, n);
+            path.remove(path.size() - 1);
+            sum -= i;
+        }
+    }
+}
+```
+
+### Leetcode[17. 电话号码的字母组合](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/)
+
+==回溯==
+
+```java
+class Solution {
+    List<String> res = new ArrayList<>();
+    StringBuilder sb = new StringBuilder();
+    String[] strs = new String[]{"abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+    public List<String> letterCombinations(String digits) {
+        if (digits.length() == 0) {
+            return res;
+        }
+        backtrack(digits, 0);
+        return res;
+    }
+
+    private void backtrack(String digits, int startIndex) {
+        if (startIndex == digits.length()) {
+            res.add(sb.toString());
+            return;
+        }
+        for (char c : strs[digits.charAt(startIndex) - '2'].toCharArray()) {
+            sb.append(c);
+            backtrack(digits, startIndex + 1);
+            sb.deleteCharAt(sb.length() - 1);
+        }
+    }
+}
+```
+
+### Leetcode[39. 组合总和](https://leetcode.cn/problems/combination-sum/)
+
+==回溯 剪枝 排序==
+
+```java
+class Solution {
+    private List<Integer> path = new ArrayList<>();
+    private List<List<Integer>> res = new ArrayList<>();
+    private int sum;
+
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        Arrays.sort(candidates);
+        backtrack(candidates, 0, target);
+        return res;
+    }
+
+    private void backtrack(int[] candidates, int startIndex, int target) {
+        if (sum == target) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+        
+        for (int i = startIndex; i < candidates.length; i++) {
+            if (sum + candidates[i] > target) break;
+            sum += candidates[i];
+            path.add(candidates[i]);
+            backtrack(candidates, i, target);
+            path.remove(path.size() - 1);
+            sum -= candidates[i];
+        }
+    }
+}
+```
+
+### Leetcode[40. 组合总和 II](https://leetcode.cn/problems/combination-sum-ii/)
+
+==回溯 去重 排序==
+
+```java
+class Solution {
+    private List<Integer> path = new ArrayList<>();
+    private List<List<Integer>> res = new ArrayList<>();
+    private int sum;
+
+    public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        Arrays.sort(candidates);
+        backtrack(candidates, 0, target);
+        return res;
+    }
+
+    private void backtrack(int[] candidates, int startIndex, int target) {
+        
+        if (sum == target) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+        
+        for (int i = startIndex; i < candidates.length; i++) {
+            if (sum + candidates[i] > target) break;
+            if (i > startIndex && candidates[i] == candidates[i - 1]) continue;
+            sum += candidates[i];
+            path.add(candidates[i]);
+            backtrack(candidates, i + 1, target);
+            path.remove(path.size() - 1);
+            sum -= candidates[i];
+        }
+    }
+}
+```
+
+## 分割问题
+
+### Leetcode[131. 分割回文串](https://leetcode.cn/problems/palindrome-partitioning/)
+
+==回溯==
+
+```java
+class Solution {
+    private List<List<String>> res = new ArrayList<>();
+    private List<String> path = new ArrayList<>();
+
+    public List<List<String>> partition(String s) {
+        backtrack(s, 0);
+        return res;
+    }
+
+    private void backtrack(String s, int startIndex) {
+        if (startIndex == s.length()) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        for (int i = startIndex; i < s.length(); i++) {
+            if (isPalindrom(s, startIndex, i)) {
+                path.add(s.substring(startIndex, i + 1));
+            } else {
+                continue;
+            }
+            backtrack(s, i + 1);
+            path.remove(path.size() - 1);
+        }
+    }
+
+    private boolean isPalindrom(String s, int start, int end) {
+        int i = start, j = end;
+        while (i < j) {
+            if (s.charAt(i) != s.charAt(j)) return false;
+            i++;
+            j--;
+        }
+        return true;
+    }
+}
+```
+
+==回溯 动态规划求解回文串==
+
+```java
+class Solution {
+    private List<List<String>> res = new ArrayList<>();
+    private List<String> path = new ArrayList<>();
+    private boolean[][] status;
+
+    public List<List<String>> partition(String s) {
+        status = new boolean[s.length()][s.length()];
+        computePalindrom(s);
+        backtrack(s, 0);
+        return res;
+    }
+
+    private void backtrack(String s, int startIndex) {
+        if (startIndex == s.length()) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        for (int i = startIndex; i < s.length(); i++) {
+            if (isPalindrom(s, startIndex, i)) {
+                path.add(s.substring(startIndex, i + 1));
+            } else {
+                continue;
+            }
+            backtrack(s, i + 1);
+            path.remove(path.size() - 1);
+        }
+    }
+
+    private boolean isPalindrom(String s, int start, int end) {
+        return status[start][end];
+    }
+
+    private void computePalindrom(String s) {
+        for (int i = s.length() - 1; i >= 0; i--)
+            for (int j = i; j < s.length(); j++) {
+                if (j - i <= 1) status[i][j] = s.charAt(i) == s.charAt(j);
+                else status[i][j] = s.charAt(i) == s.charAt(j) && status[i + 1][j - 1];
+            }
+    }
+}
+```
+
+### Leetcode[93. 复原 IP 地址](https://leetcode.cn/problems/restore-ip-addresses/)
+
+==回溯==
+
+```java
+class Solution {
+    private List<String> res = new ArrayList<>();
+    private List<String> path = new ArrayList<>();
+
+    public List<String> restoreIpAddresses(String s) {
+        backtrack(s, 0);
+        return res;
+    }
+
+    private void backtrack(String s, int startIndex) {
+        if (path.size() == 4) {
+            if (startIndex != s.length()) return;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 3; i++) {
+                sb.append(path.get(i));
+                sb.append('.');
+            }
+            sb.append(path.get(3));
+            res.add(sb.toString());
+            return;
+        }
+
+        for (int i = startIndex; i < s.length() && i < startIndex + 3; i++) {
+            String tmp = s.substring(startIndex, i + 1);
+            int value = Integer.valueOf(tmp);
+            if (value <= 255 && tmp.equals(String.valueOf(value))) {
+                path.add(tmp);
+            } else {
+                continue;
+            }
+            backtrack(s, i + 1);
+            path.remove(path.size() - 1);
+        }
+    }
+}
+```
+
+```java
+//方法一：但使用stringBuilder，故优化时间、空间复杂度，因为向字符串插入字符时无需复制整个字符串，从而减少了操作的时间复杂度，也不用开新空间存subString，从而减少了空间复杂度。
+class Solution {
+    List<String> result = new ArrayList<>();
+    public List<String> restoreIpAddresses(String s) {
+        StringBuilder sb = new StringBuilder(s);
+        backTracking(sb, 0, 0);
+        return result;
+    }
+    private void backTracking(StringBuilder s, int startIndex, int dotCount){
+        if(dotCount == 3){
+            if(isValid(s, startIndex, s.length() - 1)){
+                result.add(s.toString());
+            }
+            return;
+        }
+        for(int i = startIndex; i < s.length(); i++){
+            if(isValid(s, startIndex, i)){
+                s.insert(i + 1, '.');
+                backTracking(s, i + 2, dotCount + 1);
+                s.deleteCharAt(i + 1);
+            }else{
+                break;
+            }
+        }
+    }
+    //[start, end]
+    private boolean isValid(StringBuilder s, int start, int end){
+        if(start > end)
+            return false;
+        if(s.charAt(start) == '0' && start != end)
+            return false;
+        int num = 0;
+        for(int i = start; i <= end; i++){
+            int digit = s.charAt(i) - '0';
+            num = num * 10 + digit;
+            if(num > 255)
+                return false;
+        }
+        return true;
+    }
+}
+
+//方法二：比上面的方法时间复杂度低，更好地剪枝，优化时间复杂度
+class Solution {
+    List<String> result = new ArrayList<String>();
+	StringBuilder stringBuilder = new StringBuilder();
+
+	public List<String> restoreIpAddresses(String s) {
+		restoreIpAddressesHandler(s, 0, 0);
+		return result;
+	}
+
+	// number表示stringbuilder中ip段的数量
+	public void restoreIpAddressesHandler(String s, int start, int number) {
+		// 如果start等于s的长度并且ip段的数量是4，则加入结果集，并返回
+		if (start == s.length() && number == 4) {
+			result.add(stringBuilder.toString());
+			return;
+		}
+		// 如果start等于s的长度但是ip段的数量不为4，或者ip段的数量为4但是start小于s的长度，则直接返回
+		if (start == s.length() || number == 4) {
+			return;
+		}
+		// 剪枝：ip段的长度最大是3，并且ip段处于[0,255]
+		for (int i = start; i < s.length() && i - start < 3 && Integer.parseInt(s.substring(start, i + 1)) >= 0
+				&& Integer.parseInt(s.substring(start, i + 1)) <= 255; i++) {
+			// 如果ip段的长度大于1，并且第一位为0的话，continue
+			if (i + 1 - start > 1 && s.charAt(start) - '0' == 0) {
+				continue;
+			}
+			stringBuilder.append(s.substring(start, i + 1));
+			// 当stringBuilder里的网段数量小于3时，才会加点；如果等于3，说明已经有3段了，最后一段不需要再加点
+			if (number < 3) {
+				stringBuilder.append(".");
+			}
+			number++;
+			restoreIpAddressesHandler(s, i + 1, number);
+			number--;
+			// 删除当前stringBuilder最后一个网段，注意考虑点的数量的问题
+			stringBuilder.delete(start + number, i + number + 2);
+		}
+	}
+}
+```
+
+## 子集问题
+
+### Leetcode[78. 子集](https://leetcode.cn/problems/subsets/)
+
+==回溯==
+
+```java
+class Solution {
+    List<List<Integer>> res = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> subsets(int[] nums) {
+        backtrack(nums, 0);
+        return res;
+    }
+
+    private void backtrack(int[] nums, int startIndex) {
+        res.add(new ArrayList<>(path));
+        if (startIndex == nums.length) return;
+
+        for (int i = startIndex; i < nums.length; i++) {
+            path.add(nums[i]);
+            backtrack(nums, i + 1);
+            path.remove(path.size() - 1);
+        }
+    }
+}
+```
+
+==位运算==
+
+```java
+class Solution {
+    List<Integer> t = new ArrayList<Integer>();
+    List<List<Integer>> ans = new ArrayList<List<Integer>>();
+
+    public List<List<Integer>> subsets(int[] nums) {
+        int n = nums.length;
+        for (int mask = 0; mask < (1 << n); ++mask) {
+            t.clear();
+            for (int i = 0; i < n; ++i) {
+                if ((mask & (1 << i)) != 0) {
+                    t.add(nums[i]);
+                }
+            }
+            ans.add(new ArrayList<Integer>(t));
+        }
+        return ans;
+    }
+}
+```
+
+### Leetcode[90. 子集 II](https://leetcode.cn/problems/subsets-ii/)
+
+==回溯 排序==
+
+```java
+class Solution {
+    private LinkedList<String> res;
+    private LinkedList<String> path = new LinkedList<>();
+
+    public List<String> findItinerary(List<List<String>> tickets) {
+        Collections.sort(tickets, (a, b) -> a.get(1).compareTo(b.get(1)));
+        path.add("JFK");
+        boolean[] used = new boolean[tickets.size()];
+        backTracking((ArrayList) tickets, used);
+        return res;
+    }
+
+    public boolean backTracking(ArrayList<List<String>> tickets, boolean[] used) {
+        if (path.size() == tickets.size() + 1) {
+            res = new LinkedList(path);
+            return true;
+        }
+
+        for (int i = 0; i < tickets.size(); i++) {
+            if (!used[i] && tickets.get(i).get(0).equals(path.getLast())) {
+                path.add(tickets.get(i).get(1));
+                used[i] = true;
+
+                if (backTracking(tickets, used)) {
+                    return true;
+                }
+
+                used[i] = false;
+                path.removeLast();
+            }
+        }
+        return false;
+    }
+}
+```
+
+## 排列问题
+
+### Leetcode[46. 全排列](https://leetcode.cn/problems/permutations/)
+
+给定一个不含重复数字的数组 `nums` ，返回其 *所有可能的全排列* 。你可以 **按任意顺序** 返回答案。
+
+==回溯==
+
+```java
+class Solution {
+    public List<List<Integer>> permute(int[] nums) {
+        List<List<Integer>> res = new ArrayList<List<Integer>>();
+
+        List<Integer> output = new ArrayList<Integer>();
+        for (int num : nums) {
+            output.add(num);
+        }
+
+        int n = nums.length;
+        backtrack(n, output, res, 0);
+        return res;
+    }
+
+    public void backtrack(int n, List<Integer> output, List<List<Integer>> res, int first) {
+        // 所有数都填完了
+        if (first == n) {
+            res.add(new ArrayList<Integer>(output));
+        }
+        for (int i = first; i < n; i++) {
+            // 动态维护数组
+            Collections.swap(output, first, i);
+            // 继续递归填下一个数
+            backtrack(n, output, res, first + 1);
+            // 撤销操作
+            Collections.swap(output, first, i);
+        }
+    }
+}
+```
+
+```java
+class Solution {
+
+    List<List<Integer>> result = new ArrayList<>();// 存放符合条件结果的集合
+    LinkedList<Integer> path = new LinkedList<>();// 用来存放符合条件结果
+    boolean[] used;
+    public List<List<Integer>> permute(int[] nums) {
+        if (nums.length == 0){
+            return result;
+        }
+        used = new boolean[nums.length];
+        permuteHelper(nums);
+        return result;
+    }
+
+    private void permuteHelper(int[] nums){
+        if (path.size() == nums.length){
+            result.add(new ArrayList<>(path));
+            return;
+        }
+        for (int i = 0; i < nums.length; i++){
+            if (used[i]){
+                continue;
+            }
+            used[i] = true;
+            path.add(nums[i]);
+            permuteHelper(nums);
+            path.removeLast();
+            used[i] = false;
+        }
+    }
+}
+```
+
+### Leetcode[47. 全排列 II](https://leetcode.cn/problems/permutations-ii/)
+
+==回溯 排序==
+
+```java
+class Solution {
+    public List<List<Integer>> permuteUnique(int[] nums) {
+        List<List<Integer>> res = new ArrayList<List<Integer>>();
+
+        List<Integer> output = new ArrayList<Integer>();
+        for (int num : nums) {
+            output.add(num);
+        }
+        int n = nums.length;
+        backtrack(n, output, res, 0);
+        return res;
+    }
+
+    public void backtrack(int n, List<Integer> output, List<List<Integer>> res, int first) {
+        // 所有数都填完了
+        if (first == n) {
+            res.add(new ArrayList<Integer>(output));
+        }
+        Set<Integer> set = new HashSet<>();
+        for (int i = first; i < n; i++) {
+            if (set.contains(output.get(i))) continue;
+            set.add(output.get(i));
+            // 动态维护数组
+            Collections.swap(output, first, i);
+            // 继续递归填下一个数
+            backtrack(n, output, res, first + 1);
+            // 撤销操作
+            Collections.swap(output, first, i);
+        }
+    }
+}
+```
+
+```java
+class Solution {
+    //存放结果
+    List<List<Integer>> result = new ArrayList<>();
+    //暂存结果
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> permuteUnique(int[] nums) {
+        boolean[] used = new boolean[nums.length];
+        Arrays.fill(used, false);
+        Arrays.sort(nums);
+        backTrack(nums, used);
+        return result;
+    }
+
+    private void backTrack(int[] nums, boolean[] used) {
+        if (path.size() == nums.length) {
+            result.add(new ArrayList<>(path));
+            return;
+        }
+        for (int i = 0; i < nums.length; i++) {
+            // used[i - 1] == true，说明同⼀树⽀nums[i - 1]使⽤过
+            // used[i - 1] == false，说明同⼀树层nums[i - 1]使⽤过
+            // 如果同⼀树层nums[i - 1]使⽤过则直接跳过
+            if (i > 0 && nums[i] == nums[i - 1] && used[i - 1] == false) {
+                continue;
+            }
+            //如果同⼀树⽀nums[i]没使⽤过开始处理
+            if (used[i] == false) {
+                used[i] = true;//标记同⼀树⽀nums[i]使⽤过，防止同一树枝重复使用
+                path.add(nums[i]);
+                backTrack(nums, used);
+                path.remove(path.size() - 1);//回溯，说明同⼀树层nums[i]使⽤过，防止下一树层重复
+                used[i] = false;//回溯
+            }
+        }
+    }
+}
+```
+
+
+
+## 棋盘问题
+
+### Leecode[51. N 皇后](https://leetcode.cn/problems/n-queens/)
+
+==动态规划==
+
+```java
+class Solution {
+    List<List<String>> res = new ArrayList<>();
+
+    public List<List<String>> solveNQueens(int n) {
+        char[][] chessboard = new char[n][n];
+        for (char[] c : chessboard) {
+            Arrays.fill(c, '.');
+        }
+        backTrack(n, 0, chessboard);
+        return res;
+    }
+
+
+    public void backTrack(int n, int row, char[][] chessboard) {
+        if (row == n) {
+            res.add(Array2List(chessboard));
+            return;
+        }
+
+        for (int col = 0;col < n; ++col) {
+            if (isValid (row, col, n, chessboard)) {
+                chessboard[row][col] = 'Q';
+                backTrack(n, row+1, chessboard);
+                chessboard[row][col] = '.';
+            }
+        }
+
+    }
+
+
+    public List Array2List(char[][] chessboard) {
+        List<String> list = new ArrayList<>();
+
+        for (char[] c : chessboard) {
+            list.add(String.copyValueOf(c));
+        }
+        return list;
+    }
+
+
+    public boolean isValid(int row, int col, int n, char[][] chessboard) {
+        // 检查列
+        for (int i=0; i<row; ++i) { // 相当于剪枝
+            if (chessboard[i][col] == 'Q') {
+                return false;
+            }
+        }
+
+        // 检查45度对角线
+        for (int i=row-1, j=col-1; i>=0 && j>=0; i--, j--) {
+            if (chessboard[i][j] == 'Q') {
+                return false;
+            }
+        }
+
+        // 检查135度对角线
+        for (int i=row-1, j=col+1; i>=0 && j<=n-1; i--, j++) {
+            if (chessboard[i][j] == 'Q') {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+```
+
+### Leetcode[37. 解数独](https://leetcode.cn/problems/sudoku-solver/)
+
+==动态规划==
+
+```java
+class Solution {
+    public void solveSudoku(char[][] board) {
+        solveSudokuHelper(board);
+    }
+
+    private boolean solveSudokuHelper(char[][] board){
+        //「一个for循环遍历棋盘的行，一个for循环遍历棋盘的列，
+        // 一行一列确定下来之后，递归遍历这个位置放9个数字的可能性！」
+        for (int i = 0; i < 9; i++){ // 遍历行
+            for (int j = 0; j < 9; j++){ // 遍历列
+                if (board[i][j] != '.'){ // 跳过原始数字
+                    continue;
+                }
+                for (char k = '1'; k <= '9'; k++){ // (i, j) 这个位置放k是否合适
+                    if (isValidSudoku(i, j, k, board)){
+                        board[i][j] = k;
+                        if (solveSudokuHelper(board)){ // 如果找到合适一组立刻返回
+                            return true;
+                        }
+                        board[i][j] = '.';
+                    }
+                }
+                // 9个数都试完了，都不行，那么就返回false
+                return false;
+                // 因为如果一行一列确定下来了，这里尝试了9个数都不行，说明这个棋盘找不到解决数独问题的解！
+                // 那么会直接返回， 「这也就是为什么没有终止条件也不会永远填不满棋盘而无限递归下去！」
+            }
+        }
+        // 遍历完没有返回false，说明找到了合适棋盘位置了
+        return true;
+    }
+
+    /**
+     * 判断棋盘是否合法有如下三个维度:
+     *     同行是否重复
+     *     同列是否重复
+     *     9宫格里是否重复
+     */
+    private boolean isValidSudoku(int row, int col, char val, char[][] board){
+        // 同行是否重复
+        for (int i = 0; i < 9; i++){
+            if (board[row][i] == val){
+                return false;
+            }
+        }
+        // 同列是否重复
+        for (int j = 0; j < 9; j++){
+            if (board[j][col] == val){
+                return false;
+            }
+        }
+        // 9宫格里是否重复
+        int startRow = (row / 3) * 3;
+        int startCol = (col / 3) * 3;
+        for (int i = startRow; i < startRow + 3; i++){
+            for (int j = startCol; j < startCol + 3; j++){
+                if (board[i][j] == val){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+}
+```
+
+## 其他
+
+### Leetcode[491. 递增子序列](https://leetcode.cn/problems/non-decreasing-subsequences/)
+
+==回溯==
+
+```java
+class Solution {
+    List<List<Integer>> res = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+
+    public List<List<Integer>> findSubsequences(int[] nums) {
+        backtrack(nums, 0);
+        return res;
+    }
+
+    private void backtrack(int[] nums, int startIndex) {
+        if (path.size() >= 2) res.add(new ArrayList<>(path));
+        if (startIndex == nums.length) return;
+        Set<Integer> set = new HashSet<>();
+        for (int i = startIndex; i < nums.length; i++) {
+            if (set.contains(nums[i])) continue;
+            if (path.size() > 0 && nums[i] < path.get(path.size() - 1)) continue;
+            set.add(nums[i]);
+            path.add(nums[i]);
+            backtrack(nums, i + 1);
+            path.remove(path.size() - 1);
+        }
+    }
+}
+```
+
+### Leetcode[332. 重新安排行程](https://leetcode.cn/problems/reconstruct-itinerary/)
+
+```java
+class Solution {
+    private LinkedList<String> res;
+    private LinkedList<String> path = new LinkedList<>();
+
+    public List<String> findItinerary(List<List<String>> tickets) {
+        Collections.sort(tickets, (a, b) -> a.get(1).compareTo(b.get(1)));
+        path.add("JFK");
+        boolean[] used = new boolean[tickets.size()];
+        backTracking((ArrayList) tickets, used);
+        return res;
+    }
+
+    public boolean backTracking(ArrayList<List<String>> tickets, boolean[] used) {
+        if (path.size() == tickets.size() + 1) {
+            res = new LinkedList(path);
+            return true;
+        }
+
+        for (int i = 0; i < tickets.size(); i++) {
+            if (!used[i] && tickets.get(i).get(0).equals(path.getLast())) {
+                path.add(tickets.get(i).get(1));
+                used[i] = true;
+
+                if (backTracking(tickets, used)) {
+                    return true;
+                }
+
+                used[i] = false;
+                path.removeLast();
+            }
+        }
+        return false;
+    }
+}
+```
+
+```java
+class Solution {
+    private Deque<String> res;
+    private Map<String, Map<String, Integer>> map;
+
+    private boolean backTracking(int ticketNum){
+        if(res.size() == ticketNum + 1){
+            return true;
+        }
+        String last = res.getLast();
+        if(map.containsKey(last)){//防止出现null
+            for(Map.Entry<String, Integer> target : map.get(last).entrySet()){
+                int count = target.getValue();
+                if(count > 0){
+                    res.add(target.getKey());
+                    target.setValue(count - 1);
+                    if(backTracking(ticketNum)) return true;
+                    res.removeLast();
+                    target.setValue(count);
+                }
+            }
+        }
+        return false;
+    }
+
+    public List<String> findItinerary(List<List<String>> tickets) {
+        map = new HashMap<String, Map<String, Integer>>();
+        res = new LinkedList<>();
+        for(List<String> t : tickets){
+            Map<String, Integer> temp;
+            if(map.containsKey(t.get(0))){
+                temp = map.get(t.get(0));
+                temp.put(t.get(1), temp.getOrDefault(t.get(1), 0) + 1);
+            }else{
+                temp = new TreeMap<>();//升序Map
+                temp.put(t.get(1), 1);
+            }
+            map.put(t.get(0), temp);
+
+        }
+        res.add("JFK");
+        backTracking(tickets.size());
+        return new ArrayList<>(res);
+    }
+}
+```
+
+
+
+# 贪心
+
+## Leetcode[455. 分发饼干](https://leetcode.cn/problems/assign-cookies/)
+
+==贪心==
+
+小饼干优先喂饱喂给小胃口的孩子
+
+```java
+class Solution {
+    public int findContentChildren(int[] g, int[] s) {
+        Arrays.sort(g);
+        Arrays.sort(s);
+        int res = 0, i = 0, j = 0;
+        while (i < g.length && j < s.length) {
+            if (g[i] <= s[j++]) {
+                i++;
+                res++;
+            }
+        }
+        return res;
+    }
+}
+```
+
+## Leetcode[376. 摆动序列](https://leetcode.cn/problems/wiggle-subsequence/)
+
+==贪心==
+
+```java
+class Solution {
+    public int largestSumAfterKNegations(int[] nums, int K) {
+    	// 将数组按照绝对值大小从大到小排序，注意要按照绝对值的大小
+	nums = IntStream.of(nums)
+		     .boxed()
+		     .sorted((o1, o2) -> Math.abs(o2) - Math.abs(o1))
+		     .mapToInt(Integer::intValue).toArray();
+	int len = nums.length;	    
+	for (int i = 0; i < len; i++) {
+	    //从前向后遍历，遇到负数将其变为正数，同时K--
+	    if (nums[i] < 0 && K > 0) {
+	    	nums[i] = -nums[i];
+	    	K--;
+	    }
+	}
+	// 如果K还大于0，那么反复转变数值最小的元素，将K用完
+
+	if (K % 2 == 1) nums[len - 1] = -nums[len - 1];
+	return Arrays.stream(nums).sum();
+
+    }
+}
+```
+
+```java
+class Solution {
+    public int largestSumAfterKNegations(int[] nums, int k) {
+        Arrays.sort(nums);
+        int sum = 0;
+        if (nums[0] > 0) {
+            for (int num : nums) sum += num;
+            if (k % 2 == 1) sum -= 2 * nums[0];
+            return sum;
+        }
+        for (int i = 0; i < nums.length; i++) {
+            if (k > 0) {
+                if (nums[i] == 0) k = 0;
+                else if (nums[i] > 0) {
+                    sum += nums[i];
+                    if (k % 2 == 0) k = 0;
+                    else {
+                        sum -= 2 * Math.min(-1 * nums[i - 1], nums[i]);
+                        k = 0;
+                    }
+                } else sum += -1 * nums[i];
+                k--;  
+            } else {
+                sum += nums[i];
+            }
+            
+        }
+        if (k > 0) {
+            if (k % 2 == 1) sum += 2 * nums[nums.length - 1];
+        }
+        return sum;
+    }
+}
+```
+
+## Leetcode[860. 柠檬水找零](https://leetcode.cn/problems/lemonade-change/)
+
+==贪心==
+
+```java
+class Solution {
+    public boolean lemonadeChange(int[] bills) {
+        int five = 0;
+        int ten = 0;
+
+        for (int i = 0; i < bills.length; i++) {
+            if (bills[i] == 5) {
+                five++;
+            } else if (bills[i] == 10) {
+                five--;
+                ten++;
+            } else if (bills[i] == 20) {
+                if (ten > 0) {
+                    ten--;
+                    five--;
+                } else {
+                    five -= 3;
+                }
+            }
+            if (five < 0 || ten < 0) return false;
+        }
+        
+        return true;
+    }
+}
+```
+
+## 序列问题
+
+### Leetcode[376. 摆动序列](https://leetcode.cn/problems/wiggle-subsequence/)
+
+==贪心==
+
+```java
+class Solution {
+    public int wiggleMaxLength(int[] nums) {
+        if (nums.length <= 1) return nums.length;
+        int preDiff = 0, curDiff = 0, result = 1;
+        for (int i = 0; i < nums.length - 1; i++) {
+            curDiff = nums[i + 1] - nums[i];
+            if ((preDiff <= 0 && curDiff > 0) || (preDiff >= 0 && curDiff < 0)) {
+                preDiff = curDiff;
+                result++;
+            }
+        }     
+        return result;                 
+    }
+}
+```
+
+==动态规划==
+
+- 设 dp 状态`dp[i][0]`，表示考虑前 i 个数，第 i 个数作为山峰的摆动子序列的最长长度
+
+- 设 dp 状态`dp[i][1]`，表示考虑前 i 个数，第 i 个数作为山谷的摆动子序列的最长长度
+
+  
+
+  `dp[i][0] = max(dp[i][0], dp[j][1] + 1)`，其中`0 < j < i`且`nums[j] < nums[i]`，表示将 nums[i]接到前面某个山谷后面，作为山峰。
+
+  `dp[i][1] = max(dp[i][1], dp[j][0] + 1)`，其中`0 < j < i`且`nums[j] > nums[i]`，表示将 nums[i]接到前面某个山峰后面，作为山谷。
+
+```java
+class Solution {
+    public int wiggleMaxLength(int[] nums) {
+        // 0 i 作为波峰的最大长度
+        // 1 i 作为波谷的最大长度
+        int dp[][] = new int[nums.length][2];
+
+        dp[0][0] = dp[0][1] = 1;
+        for (int i = 1; i < nums.length; i++){
+            //i 自己可以成为波峰或者波谷
+            dp[i][0] = dp[i][1] = 1;
+
+            for (int j = 0; j < i; j++){
+                if (nums[j] > nums[i]){
+                    // i 是波谷
+                    dp[i][1] = Math.max(dp[i][1], dp[j][0] + 1);
+                }
+                if (nums[j] < nums[i]){
+                    // i 是波峰
+                    dp[i][0] = Math.max(dp[i][0], dp[j][1] + 1);
+                }
+            }
+        }
+
+        return Math.max(dp[nums.length - 1][0], dp[nums.length - 1][1]);
+    }
+}
+```
+
+### Leetcode[738. 单调递增的数字](https://leetcode.cn/problems/monotone-increasing-digits/)
+
+==贪心==
+
+```java
+class Solution {
+    public int monotoneIncreasingDigits(int n) {
+        String s = String.valueOf(n);
+        char[] chars = s.toCharArray();
+        int start = s.length();
+        for (int i = s.length() - 2; i >= 0; i--) {
+            if (chars[i] > chars[i + 1]) {
+                chars[i]--;
+                start = i+1;
+            }
+        }
+        for (int i = start; i < s.length(); i++) {
+            chars[i] = '9';
+        }
+        return Integer.parseInt(String.valueOf(chars));
+    }
+}
+```
+
+## 股票问题
+
+见动态规划篇章
+
+### Leetcode[121. 买卖股票的最佳时机](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/)
+
+### Leetcode[122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)
+
+### Leetcode[714. 买卖股票的最佳时机含手续费](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/)
+
+## 两个维度权衡问题
+
+### Leetcode[135. 分发糖果](https://leetcode.cn/problems/candy/)
+
+==贪心==
+
+```java
+class Solution {
+    public int candy(int[] ratings) {
+        int[] temp = new int[ratings.length];
+        for (int i = 1; i < ratings.length; i++) {
+            if (ratings[i] > ratings[i - 1]) temp[i] = temp[i - 1] + 1;
+        }
+
+        for (int i = ratings.length - 2; i >= 0; i--) {
+            if (ratings[i] > ratings[i + 1]) temp[i] = Math.max(temp[i], temp[i + 1] + 1);
+        }
+
+        int res = 0;
+        for (int num : temp) res += num;
+        return res + ratings.length;
+    }
+}
+```
+
+### Leetcode[406. 根据身高重建队列](https://leetcode.cn/problems/queue-reconstruction-by-height/)
+
+==贪心==
+
+```java
+class Solution {
+    public int[][] reconstructQueue(int[][] people) {
+        // 身高从大到小排（身高相同k小的站前面）
+        Arrays.sort(people, (a, b) -> {
+            if (a[0] == b[0]) return a[1] - b[1];   // a - b 是升序排列，故在a[0] == b[0]的狀況下，會根據k值升序排列
+            return b[0] - a[0];   //b - a 是降序排列，在a[0] != b[0]，的狀況會根據h值降序排列
+        });
+
+        LinkedList<int[]> que = new LinkedList<>();
+
+        for (int[] p : people) {
+            que.add(p[1],p);   //Linkedlist.add(index, value)，會將value插入到指定index裡。
+        }
+
+        return que.toArray(new int[people.length][0]);
+    }
+}
+```
+
+
+
+## Leetcode[53. 最大子数组和](https://leetcode.cn/problems/maximum-subarray/)
+
+==贪心==
+
+```java
+class Solution {
+    public int maxSubArray(int[] nums) {
+        if (nums.length == 1){
+            return nums[0];
+        }
+        int sum = Integer.MIN_VALUE;
+        int count = 0;
+        for (int i = 0; i < nums.length; i++){
+            count += nums[i];
+            sum = Math.max(sum, count); // 取区间累计的最大值（相当于不断确定最大子序终止位置）
+            if (count <= 0){
+                count = 0; // 相当于重置最大子序起始位置，因为遇到负数一定是拉低总和
+            }
+        }
+       return sum;
+    }
+}
+```
+
+==动态规划==
+
+```java
+// DP 方法
+class Solution {
+    public int maxSubArray(int[] nums) {
+        int ans = Integer.MIN_VALUE;
+        int[] dp = new int[nums.length];
+        dp[0] = nums[0];
+        ans = dp[0];
+
+        for (int i = 1; i < nums.length; i++){
+            dp[i] = Math.max(dp[i-1] + nums[i], nums[i]);
+            ans = Math.max(dp[i], ans);
+        }
+
+        return ans;
+    }
+}
+```
+
+
+
+# 动态规划
+
+## 背包问题
+
+### 【01背包】Leetcode[416. 分割等和子集](https://leetcode.cn/problems/partition-equal-subset-sum/)
+
+==动态规划 01背包==
+
+```java
+class Solution {
+    public boolean canPartition(int[] nums) {
+        int sum = 0;
+        for (int num : nums) sum += num;
+        if (sum % 2 == 1) return false;
+        int[] dp = new int[sum / 2 + 1];
+        for (int num : nums)
+            for (int w = dp.length - 1; w >= num; w--)
+                dp[w] = Math.max(dp[w], dp[w - num] + num);
+        return sum - 2 * dp[dp.length - 1] == 0;
+    }
+}
+```
+
+### 【01背包】Leetcode[1049. 最后一块石头的重量 II](https://leetcode.cn/problems/last-stone-weight-ii/)
+
+```java
+class Solution {
+    int res = Integer.MAX_VALUE;
+    
+    public int lastStoneWeightII(int[] stones) {
+        dfs(stones, 0);
+        return res;
+    }
+
+    private void dfs(int[] stones, int start) {
+        if (start == stones.length) {
+            int prev = 0;
+            for (int s : stones) prev = Math.abs(prev - s);
+            res = Math.min(res, prev);
+            return;
+        }
+
+        for (int i = start; i < stones.length; i++) {
+            swap(stones, start, i);
+            dfs(stones, start + 1);
+            swap(stones, start, i);
+        }
+    }
+
+    private void swap(int[] stones, int i, int j) {
+        int temp = stones[i];
+        stones[i] = stones[j];
+        stones[j] = temp;
+    }
+}
+```
+
+### 【01背包】Leetcode[494. 目标和](https://leetcode.cn/problems/target-sum/)
+
+==动态规划 01背包==
+
+```java
+class Solution {
+    public int findTargetSumWays(int[] nums, int target) {
+        int sum = 0;
+        for (int num : nums) sum += num;
+        if (sum < -1 * target || sum < target) return 0;
+        if ((sum + target) % 2 == 1) return 0;
+        int weight = Math.min((sum + target) / 2, (sum - target) / 2);
+        int[] dp = new int[weight +1];
+        dp[0] = 1;
+        for (int num : nums)
+            for (int w = weight; w >= num; w--)
+                dp[w] += dp[w - num];
+        return dp[weight]; 
+    }
+}
+```
+
+### 【完全背包】Leetcode[518. 零钱兑换 II](https://leetcode.cn/problems/coin-change-ii/)
+
+==动态规划 01背包 完全背包==
+
+```java
+class Solution {
+    public int change(int amount, int[] coins) {
+        int[] dp = new int[amount + 1];
+        dp[0] = 1;
+        for (int coin : coins)
+            for (int w = coin; w <= amount; w++)
+                dp[w] += dp[w - coin];
+        return dp[amount];
+    }
+}
+```
+
+### 【完全背包】Leetcode[377. 组合总和 Ⅳ](https://leetcode.cn/problems/combination-sum-iv/)
+
+==动态规划 01背包 完全背包==
+
+```java
+class Solution {
+    public int combinationSum4(int[] nums, int target) {
+        int[] dp = new int[target + 1];
+        dp[0] = 1;
+        for (int w = 1; w <= target; w++)
+            for (int num : nums) 
+                if (w >= num)
+                    dp[w] += dp[w - num];
+        return dp[target];
+    }
+}
+```
+
+### 【完全背包】Leecode[70. 爬楼梯](https://leetcode.cn/problems/climbing-stairs/)
+
+==动态规划 01背包 完全背包==
+
+```java
+class Solution {
+    public int climbStairs(int n) {
+        int[] dp = new int[n + 1];
+        dp[0] = 1;
+        for (int w = 1; w <= n; w++) {
+            dp[w] += dp[w - 1];
+            if (w >= 2) dp[w] += dp[w - 2];
+        }
+        return dp[n];
+    }
+}
+```
+
+==另外一种动态规划==
+
+```java
+class Solution {
+    public int climbStairs(int n) {
+        int pre1 = 0, pre2 = 1;
+        for (int i = 1; i <= n; i++) {
+            int temp = pre2;
+            pre2 = pre1 + pre2;
+            pre1 = temp;
+        }
+        return pre2;
+    }
+}
+```
+
+### 【完全背包】Leecode[322. 零钱兑换](https://leetcode.cn/problems/coin-change/)
+
+==动态规划 01背包 完全背包==
+
+```java
+class Solution {
+    public int coinChange(int[] coins, int amount) {
+        int max = Integer.MAX_VALUE;
+        int[] dp = new int[amount + 1];
+        dp[0] = 0;
+        for (int i = 1; i <= amount; i++) dp[i] = max;
+        for (int coin : coins)
+            for (int w = coin; w <= amount; w++)
+                if (dp[w - coin] != max)
+                    dp[w] = Math.min(dp[w], dp[w - coin] + 1);
+        return dp[amount] == max ? -1 : dp[amount];
+    }
+}
+```
+
+==贪心==
+
+会超时，贪心策略为：优先选择大的面值
+
+```java
+class Solution {
+    int res = Integer.MAX_VALUE;
+    public int coinChange(int[] coins, int amount){
+        if(amount==0){
+            return 0;
+            }
+        Arrays.sort(coins);
+        mincoin(coins,amount,coins.length-1,0);
+        return res==Integer.MAX_VALUE? -1:res;
+    }
+    private void mincoin(int[] coins,int amount, int index, int count){
+        if(amount==0){
+            res = Math.min(res,count);
+            return;
+        }
+        if(index<0){
+            return;
+        }
+        for(int i = amount/coins[index];i>=0 && i+count<res; i--){
+            mincoin(coins,amount - (i*coins[index]), index-1, count+i);
+        }
+    }
+}
+```
+
+### 【完全背包】Leecode [279. 完全平方数](https://leetcode.cn/problems/perfect-squares/)
+
+==动态规划 01背包 完全背包==
+
+```java
+class Solution {
+    public int numSquares(int n) {
+        int m = (int)Math.pow(n, 0.5);
+        int max = Integer.MAX_VALUE;
+        int[] dp = new int[n + 1];
+        dp[0] = 0;
+        for (int i = 1; i <= n; i++) dp[i] = max;
+        for (int i = 1; i <= m; i++)
+            for (int w = i * i; w <= n; w++)
+                    dp[w] = Math.min(dp[w], dp[w - i * i] + 1);
+        return dp[n];
+    }
+}
+```
+
+## 股票问题
+
+### Leetcode[121. 买卖股票的最佳时机](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/)
+
+==贪心==
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+        // 找到一个最小的购入点
+        int low = Integer.MAX_VALUE;
+        // res不断更新，直到数组循环完毕
+        int res = 0;
+        for(int i = 0; i < prices.length; i++){
+            low = Math.min(prices[i], low);
+            res = Math.max(prices[i] - low, res);
+        }
+        return res;
+    }
+}
+```
+
+==动态规划==
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+        if (prices == null || prices.length == 0) return 0;
+        int length = prices.length;
+        // dp[i][0]代表第i天持有股票的最大收益
+        // dp[i][1]代表第i天不持有股票的最大收益
+        int[][] dp = new int[length][2];
+        int result = 0;
+        dp[0][0] = -prices[0];
+        dp[0][1] = 0;
+        for (int i = 1; i < length; i++) {
+            dp[i][0] = Math.max(dp[i - 1][0], -prices[i]);
+            dp[i][1] = Math.max(dp[i - 1][0] + prices[i], dp[i - 1][1]);
+        }
+        return dp[length - 1][1];
+    }
+}
+```
+
+### Leetcode[122. 买卖股票的最佳时机 II](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-ii/)
+
+==贪心==
+
+```java
+// 贪心思路
+class Solution {
+    public int maxProfit(int[] prices) {
+        int result = 0;
+        for (int i = 1; i < prices.length; i++) {
+            result += Math.max(prices[i] - prices[i - 1], 0);
+        }
+        return result;
+    }
+}
+```
+
+==动态规划==
+
+```java
+// 动态规划
+class Solution {
+    // 实现1：二维数组存储
+    // 可以将每天持有与否的情况分别用 dp[i][0] 和 dp[i][1] 来进行存储
+    // 时间复杂度：O(n)，空间复杂度：O(n)
+    public int maxProfit(int[] prices) {
+        int n = prices.length;
+        int[][] dp = new int[n][2];     // 创建二维数组存储状态
+        dp[0][1] = 0;                   // 初始状态
+        dp[0][0] = -prices[0];
+        for (int i = 1; i < n; ++i) {
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] - prices[i]);    // 第 i 天，持有股票
+            dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] + prices[i]);    // 第 i 天，不持有股票
+        }
+        return dp[n - 1][1];    // 卖出股票收益高于持有股票收益，因此取[0]
+    }
+}
+```
+
+### Leetcode[714. 买卖股票的最佳时机含手续费](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/)
+
+==贪心==
+
+```java
+class Solution {
+    public int maxProfit(int[] prices, int fee) {
+        int n = prices.length;
+        int buy = prices[0] + fee;
+        int profit = 0;
+        for (int i = 1; i < n; ++i) {
+            if (prices[i] + fee < buy) {
+                buy = prices[i] + fee;
+            } else if (prices[i] > buy) {
+                profit += prices[i] - buy;
+                buy = prices[i];
+            }
+        }
+        return profit;
+    }
+}
+```
+
+==动态规划==
+
+```java
+class Solution {
+    public int maxProfit(int[] prices, int fee) {
+        if (prices == null || prices.length == 0) return 0;
+        int[][] dp = new int[prices.length][2];
+        dp[0][0] = -prices[0] - fee;
+        dp[0][1] = 0;
+        for (int i = 1; i < prices.length; i++) {
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] - prices[i] - fee);
+            dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] + prices[i]);
+        }
+        return dp[prices.length - 1][1];
+    }
+}
+```
+
+### Leetcode[123. 买卖股票的最佳时机 III](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iii/)
+
+==动态规划==
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+        if (prices == null || prices.length == 0) {
+            return 0;
+        }
+        int[][] dp = new int[prices.length][4];
+        dp[0][0] = -prices[0];
+        dp[0][2] = -prices[0];
+        for (int i = 1; i < prices.length; i++) {
+            dp[i][0] = Math.max(dp[i - 1][0], -prices[i]);
+            dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] + prices[i]);
+            dp[i][2] = Math.max(dp[i - 1][2], dp[i - 1][1] - prices[i]);
+            dp[i][3] = Math.max(dp[i - 1][3], dp[i - 1][2] + prices[i]);
+        }
+        return dp[prices.length - 1][3]; 
+    }
+}
+```
+
+### Leetcode[188. 买卖股票的最佳时机 IV](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-iv/)
+
+==动态规划==
+
+滚动数组
+
+```java
+class Solution {
+    public int maxProfit(int k, int[] prices) {
+        if (prices == null && prices.length == 0) return 0;
+        int[] dp = new int[ 2 * k];
+        for (int i = 0; i < 2 * k; i += 2) dp[i] = -prices[0];
+        for (int i = 1; i < prices.length; i++) {
+            dp[0] = Math.max(dp[0], -prices[i]);
+            for (int j = 1; j < 2 * k; j++) {
+                if (j % 2 == 0) dp[j] = Math.max(dp[j], dp[j - 1] - prices[i]);
+                else dp[j] = Math.max(dp[j], dp[j - 1] + prices[i]);
+            }
+        }
+        return dp[2 * k - 1];
+    }
+}
+```
+
+### Leetcode[309. 买卖股票的最佳时机含冷冻期](https://leetcode.cn/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
+
+==动态规划==
+
+```java
+class Solution {
+    public int maxProfit(int[] prices) {
+        if (prices == null || prices.length == 0) return 0;
+        int[][] dp = new int[prices.length][3];
+        dp[0][0] = -prices[0];
+        for (int i = 1; i < prices.length; i++) {
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][2] - prices[i]);
+            dp[i][1] = dp[i - 1][0] + prices[i];
+            dp[i][2] = Math.max(dp[i - 1][2], dp[i - 1][1]);
+        }
+        return Math.max(dp[prices.length - 1][1], dp[prices.length - 1][2]);
+    }
+}
+```
+
+# 图论
+
+## Leecode[797. 所有可能的路径](https://leetcode.cn/problems/all-paths-from-source-to-target/)
+
+==DFS==
+
+```java
+class Solution {
+    List<List<Integer>> res;
+    List<Integer> path;
+
+    public List<List<Integer>> allPathsSourceTarget(int[][] graph) {
+        res = new ArrayList<>();
+        path = new ArrayList<>();
+        path.add(0);
+        dfs(graph, 0);
+        return res;
+    }
+
+    private void dfs(int[][] graph, int start) {
+        if (start == graph.length - 1) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+        for (int next : graph[start]) {
+            path.add(next);
+            dfs(graph, next);
+            path.remove(path.size() - 1);
+        }
+    }
+}
+```
+
+## Leetcode[200. 岛屿数量](https://leetcode.cn/problems/number-of-islands/)
+
+==DFS==
+
+```java
+class Solution {
+    public int numIslands(char[][] grid) {
+        int res = 0;
+        for (int i = 0; i < grid.length; i++)
+            for (int j = 0; j < grid[0].length; j++) {
+                if (grid[i][j] == '1') {
+                    dfs(grid, i, j);
+                    res++;
+                }
+            }
+        return res;
+    }
+
+    private void dfs(char[][] grid, int i, int j) {
+        if (i < 0 || j < 0 || i == grid.length || j == grid[0].length || grid[i][j] == '0') return;
+        grid[i][j] = '0';
+        dfs(grid, i - 1, j);
+        dfs(grid, i + 1, j);
+        dfs(grid, i, j - 1);
+        dfs(grid, i, j + 1);
+    }
+}
+```
+
+==BFS==
+
+```java
+class Solution {
+
+    boolean[][] visited;
+    int[][] move = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+
+    public int numIslands(char[][] grid) {
+        int res = 0;
+        visited = new boolean[grid.length][grid[0].length];
+        for(int i = 0; i < grid.length; i++) {
+            for(int j = 0; j < grid[0].length; j++) {
+                if(!visited[i][j] && grid[i][j] == '1') {
+                    bfs(grid, i, j);
+                    res++;
+                }
+            }
+        }
+        return res;
+    }
+
+    //将这片岛屿上的所有陆地都访问到
+    public void bfs(char[][] grid, int y, int x) {
+        Deque<int[]> queue = new ArrayDeque<>();
+        queue.offer(new int[]{y, x});
+        visited[y][x] = true;
+        while(!queue.isEmpty()) {
+            int[] cur = queue.poll();
+            int m = cur[0];
+            int n = cur[1];
+            for(int i = 0; i < 4; i++) {
+                int nexty = m + move[i][0];
+                int nextx = n + move[i][1];
+                if(nextx < 0 || nexty == grid.length || nexty < 0 || nextx == grid[0].length) continue;
+                if(!visited[nexty][nextx] && grid[nexty][nextx] == '1') {
+                    queue.offer(new int[]{nexty, nextx}); 
+                    visited[nexty][nextx] = true; //只要加入队列就标记为访问
+                }
+            }
+        }
+    }
+}
+```
+
+## 华为笔试9.20
+
+见上文论述
+
+## Leetcode[695. 岛屿的最大面积](https://leetcode.cn/problems/max-area-of-island/)
+
+==DFS==
+
+```java
+class Solution {
+    static int ans;
+    static int temp;
+
+    public int maxAreaOfIsland(int[][] grid) {
+        ans = 0;
+        for (int i = 0; i < grid.length; i++)
+            for (int j = 0; j < grid[0].length; j++)
+                if (grid[i][j] == 1) {
+                    temp = 0;
+                    dfs(grid, i, j);
+                    ans = Math.max(ans, temp);
+                }
+        return ans;
+    }
+
+    private void dfs(int[][] grid, int i, int j) {
+        if (i < 0 || j < 0 || i == grid.length || j == grid[0].length || grid[i][j] == 0) return;
+        temp++;
+        grid[i][j] = 0;
+        dfs(grid, i - 1, j);
+        dfs(grid, i + 1, j);
+        dfs(grid, i, j - 1);
+        dfs(grid, i, j + 1);
+    }
+}
+```
+
+```java
+//这里使用深度优先搜索 DFS 来完成本道题目。我们使用 DFS 计算一个岛屿的面积，同时维护计算过的最大的岛屿面积。同时，为了避免对岛屿重复计算，我们在 DFS 的时候对岛屿进行 “淹没” 操作，即将岛屿所占的地方置为 0。
+public int maxAreaOfIsland(int[][] grid) {
+    int res = 0;
+    for(int i = 0;i < grid.length;i++){
+        for(int j = 0;j < grid[0].length;j++){
+        	//每遇到一个岛屿就计算这个岛屿的面积同时”淹没“这个岛屿
+            if(grid[i][j] == 1){
+            	//每次计算一个岛屿的面积都要与res比较，维护最大的岛屿面积作为最后的答案
+                res = Math.max(res,dfs(grid,i,j));
+            }
+        }
+    }
+    return res;
+}
+public int dfs(int[][] grid,int i,int j){
+	//搜索边界：i，j超过grid的范围或者当前元素为0，即当前所在的地方已经是海洋
+    if(i < 0 || i >= grid.length || j < 0 || j >= grid[0].length || grid[i][j] == 0) return 0;
+    //淹没土地，防止后续被重复计算
+    grid[i][j] = 0;
+    //递归的思路：要求当前土地(i,j)所在的岛屿的面积，则等于1加上下左右相邻的土地的总面积
+    return 1 + dfs(grid,i - 1,j) +
+               dfs(grid,i + 1,j) +
+               dfs(grid,i,j + 1) +
+               dfs(grid,i,j - 1);
+}
+```
+
+==BFS==
+
+```java
+//BFS
+class Solution {
+    int[][] dir = {
+        {0, 1}, {1, 0}, {0, -1}, {-1, 0}
+    };
+
+    int count;
+    boolean visited[][];
+
+    public int maxAreaOfIsland(int[][] grid) {
+        int res = 0;
+        visited = new boolean[grid.length][grid[0].length];
+        
+        for(int i = 0; i < grid.length; i++){
+            for(int j = 0; j < grid[0].length; j++){
+                if(visited[i][j] == false && grid[i][j] == 1){
+                    count = 0;
+                    bfs(grid, i, j);
+                    res = Math.max(res, count);
+                }
+            }
+        }
+        return res;
+    }
+    private void bfs(int[][] grid, int x, int y){
+        Queue<Integer> que = new LinkedList<>();
+        que.offer(x);
+        que.offer(y);
+        visited[x][y] = true;
+        count++;
+        
+        while(!que.isEmpty()){
+            int currX = que.poll();
+            int currY = que.poll();
+
+            for(int i = 0; i < 4; i++){
+                int nextX = currX + dir[i][0];
+                int nextY = currY + dir[i][1];
+                
+                if(nextX < 0 || nextY < 0 || nextX >= grid.length || nextY >= grid[0].length)
+                    continue;
+                if(visited[nextX][nextY] == false && grid[nextX][nextY] == 1){
+                    que.offer(nextX);
+                    que.offer(nextY);
+                    visited[nextX][nextY] = true;
+                    count++;
+                }
+            }
+        }
+    }
+}
+```
+
+## Leetcode[1020. 飞地的数量](https://leetcode.cn/problems/number-of-enclaves/)
+
+==DFS==
+
+```java
+class Solution {
+    public int numEnclaves(int[][] grid) {
+        int row = grid.length, col = grid[0].length;
+        for (int i = 0; i < row; i++) {
+            dfs(grid, i, 0);
+            dfs(grid, i, col - 1);
+        }
+        for (int i = 0; i < col; i++) {
+            dfs(grid, 0, i);
+            dfs(grid, row - 1, i);
+        }
+        int res = 0;
+        for (int i = 1; i < row - 1; i++)
+            for (int j = 1; j < col - 1; j++)
+                if (grid[i][j] == 1)
+                    res++;
+        return res;
+    }
+
+    private void dfs(int[][] grid, int r, int c) {
+        if (r < 0 || c < 0 || r == grid.length || c == grid[0].length || grid[r][c] == 0) return;
+        grid[r][c] = 0;
+        dfs(grid, r - 1, c);
+        dfs(grid, r + 1, c);
+        dfs(grid, r, c - 1);
+        dfs(grid, r, c + 1);
+    }
+
+}
+```
+
+==BFS==
+
+```java
+class Solution {
+    // 四个方向
+    private static final int[][] position = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+
+    // 广度优先遍历，把可以通向边缘部分的 1 全部标记成 true
+    public void bfs(int[][] grid, Queue<int[]> queue, boolean[][] visited) {
+        while (!queue.isEmpty()) {
+            int[] curPos = queue.poll();
+            for (int[] current: position) {
+                int row = curPos[0] + current[0], col = curPos[1] + current[1];
+                // 下标越界直接跳过
+                if (row < 0 || row >= grid.length || col < 0 || col >= grid[0].length) 
+                    continue;
+                // 当前位置不是 1 或者已经被访问了就直接跳过
+                if (visited[row][col] || grid[row][col] == 0) continue;
+                visited[row][col] = true;
+                queue.add(new int[]{row, col});
+            }
+        }
+    }
+
+    public int numEnclaves(int[][] grid) {
+        int rowSize = grid.length, colSize = grid[0].length, ans = 0;	// ans 记录答案
+        // 标记数组记录每个值为 1 的位置是否可以到达边界，可以为 true，反之为 false
+        boolean[][] visited = new boolean[rowSize][colSize];
+        Queue<int[]> queue = new ArrayDeque<>();
+        // 搜索左侧边界和右侧边界查找 1 存入队列
+        for (int row = 0; row < rowSize; row++) {
+            if (grid[row][0] == 1) {
+                visited[row][0] = true;
+                queue.add(new int[]{row, 0});
+            }
+            if (grid[row][colSize - 1] == 1) {
+                visited[row][colSize - 1] = true;
+                queue.add(new int[]{row, colSize - 1});
+            }
+        }
+        // 搜索上边界和下边界遍历，但是四个角不用遍历，因为上面已经遍历到了
+        for (int col = 1; col < colSize - 1; col++) {
+            if (grid[0][col] == 1) {
+                visited[0][col] = true;
+                queue.add(new int[]{0, col});
+            }
+            if (grid[rowSize - 1][col] == 1 && !visited[rowSize - 1][col]) {
+                visited[rowSize - 1][col] = true;
+                queue.add(new int[]{rowSize - 1, col});
+            }
+        }
+        bfs(grid, queue, visited);		// 广度优先遍历
+        // 查找没有标记过的 1，记录到 ans 中
+        for (int row = 0; row < rowSize; row++) {
+            for (int col = 0; col < colSize; col++) {
+                if (grid[row][col] == 1 && !visited[row][col]) ++ans;
+            }
+        }
+        return ans;
+    }
+}
+```
+
+## Leetcode[130. 被围绕的区域](https://leetcode.cn/problems/surrounded-regions/)
+
+==DFS==
+
+```java
+class Solution {
+    boolean[][] visited;
+
+    public void solve(char[][] board) {
+        int row = board.length, col = board[0].length;
+        visited = new boolean[row][col];
+
+        for (int i = 0; i < row; i++) {
+            dfs(board, i, 0);
+            dfs(board, i, col - 1);
+        }
+        for (int i = 0; i < col; i++) {
+            dfs(board, 0, i);
+            dfs(board, row - 1, i);
+        }
+        for (int i = 1; i < row - 1; i++)
+            for (int j = 1; j < col - 1; j++)
+                if (board[i][j] == 'O' && !visited[i][j])
+                    board[i][j] = 'X';
+    }
+
+    private void dfs(char[][] board, int r, int c) {
+        if (r < 0 || c < 0 || r == board.length || c == board[0].length || board[r][c] == 'X' || visited[r][c]) return;
+        visited[r][c] = true;
+        dfs(board, r - 1, c);
+        dfs(board, r + 1, c);
+        dfs(board, r, c - 1);
+        dfs(board, r, c + 1);
+    }
+}
+```
+
+
+
+==BFS==
+
+```java
+// 广度优先遍历
+// 使用 visited 数组进行标记
+class Solution {
+    private static final int[][] position = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};  // 四个方向
+
+    public void solve(char[][] board) {
+        // rowSize：行的长度，colSize：列的长度
+        int rowSize = board.length, colSize = board[0].length; 
+        boolean[][] visited = new boolean[rowSize][colSize];
+        Queue<int[]> queue = new ArrayDeque<>();
+        // 从左侧边，和右侧边遍历
+        for (int row = 0; row < rowSize; row++) {
+            if (board[row][0] == 'O') {
+                visited[row][0] = true;
+                queue.add(new int[]{row, 0});
+            }
+            if (board[row][colSize - 1] == 'O') {
+                visited[row][colSize - 1] = true;
+                queue.add(new int[]{row, colSize - 1});
+            }
+        }
+        // 从上边和下边遍历，在对左侧边和右侧边遍历时我们已经遍历了矩阵的四个角
+        // 所以在遍历上边和下边时可以不用遍历四个角
+        for (int col = 1; col < colSize - 1; col++) {
+            if (board[0][col] == 'O') {
+                visited[0][col] = true;
+                queue.add(new int[]{0, col});
+            }
+            if (board[rowSize - 1][col] == 'O') {
+                visited[rowSize - 1][col] = true;
+                queue.add(new int[]{rowSize - 1, col});
+            }
+        }
+        // 广度优先遍历，把没有被 'X' 包围的 'O' 进行标记
+        while (!queue.isEmpty()) {
+            int[] current = queue.poll();
+            for (int[] pos: position) {
+                int row = current[0] + pos[0], col = current[1] + pos[1];
+                // 如果范围越界、位置已被访问过、该位置的值不是 'O'，就直接跳过
+                if (row < 0 || row >= rowSize || col < 0 || col >= colSize) continue;
+                if (visited[row][col] || board[row][col] != 'O') continue;
+                visited[row][col] = true;
+                queue.add(new int[]{row, col});
+            }
+        }
+        // 遍历数组，把没有被标记的 'O' 修改成 'X'
+        for (int row = 0; row < rowSize; row++) {
+            for (int col = 0; col < colSize; col++) {
+                if (board[row][col] == 'O' && !visited[row][col]) board[row][col] = 'X';
+            }
+        }
+    }
+}
+```
+
+## Leetcode[417. 太平洋大西洋水流问题](https://leetcode.cn/problems/pacific-atlantic-water-flow/)
+
+==DFS==
+
+```java
+class Solution {
+    boolean[][][] visited;
+    
+
+    public List<List<Integer>> pacificAtlantic(int[][] heights) {
+        int row = heights.length, col = heights[0].length;
+        visited = new boolean[row][col][2];
+        for (int i = 0; i < row; i++) {
+            dfs(heights, i, 0, -1, 0);
+            dfs(heights, i, col - 1, -1, 1);
+        }
+        for (int i = 0; i < col; i++) {
+            dfs(heights, 0, i, -1, 0);
+            dfs(heights, row - 1, i, -1, 1);
+        }
+        List<List<Integer>> res = new ArrayList<>();
+        for (int i = 0; i < row; i++)
+            for (int j = 0; j < col; j++)
+                if (visited[i][j][0] && visited[i][j][1])
+                    res.add(Arrays.asList(i, j));
+        return res;
+    }
+
+    private void dfs(int[][] heights, int r, int c, int prev, int sign) {
+        if (r < 0 || c < 0 || r == heights.length || c == heights[0].length || visited[r][c][sign] || heights[r][c] < prev) return;
+        visited[r][c][sign] = true;
+        dfs(heights, r - 1, c, heights[r][c], sign);
+        dfs(heights, r + 1, c, heights[r][c], sign);
+        dfs(heights, r, c - 1, heights[r][c], sign);
+        dfs(heights, r, c + 1, heights[r][c], sign);
+    }
+}
+```
+
+```java
+class Solution {
+    // 四个位置
+    private static final int[][] position = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+
+    /**
+     * @param heights 题目给定的二维数组
+     * @param row 当前位置的行号
+     * @param col 当前位置的列号
+     * @param sign 记录是哪一条河，两条河中可以一个为 0，一个为 1
+     * @param visited 记录这个位置可以到哪条河
+     */
+    public void dfs(int[][] heights, int row, int col, int sign, boolean[][][] visited) {
+        for (int[] current: position) {
+            int curRow = row + current[0], curCol = col + current[1];
+            // 越界
+            if (curRow < 0 || curRow >= heights.length || curCol < 0 || curCol >= heights[0].length)
+                continue;
+            // 高度不合适或者已经被访问过了
+            if (heights[curRow][curCol] < heights[row][col] || visited[curRow][curCol][sign]) continue;
+            visited[curRow][curCol][sign] = true;
+            dfs(heights, curRow, curCol, sign, visited);
+        }
+    }
+
+    public List<List<Integer>> pacificAtlantic(int[][] heights) {
+        int rowSize = heights.length, colSize = heights[0].length;
+        List<List<Integer>> ans = new ArrayList<>();
+        // 记录 [row, col] 位置是否可以到某条河，可以为 true，反之为 false；
+        // 假设太平洋的标记为 1，大西洋为 0
+        boolean[][][] visited = new boolean[rowSize][colSize][2];
+        for (int row = 0; row < rowSize; row++) {
+            visited[row][colSize - 1][0] = true;
+            visited[row][0][1] = true;
+            dfs(heights, row, colSize - 1, 0, visited);
+            dfs(heights, row, 0, 1, visited);
+        }
+        for (int col = 0; col < colSize; col++) {
+            visited[rowSize - 1][col][0] = true;
+            visited[0][col][1] = true;
+            dfs(heights, rowSize - 1, col, 0, visited);
+            dfs(heights, 0, col, 1, visited);
+        }
+        for (int row = 0; row < rowSize; row++) {
+            for (int col = 0; col < colSize; col++) {
+                // 如果该位置即可以到太平洋又可以到大西洋，就放入答案数组
+                if (visited[row][col][0] && visited[row][col][1])
+                    ans.add(List.of(row, col));
+            }
+        }
+        return ans;
+    }
+}
+```
+
+==BFS==
+
+```java
+class Solution {
+    // 四个位置
+    private static final int[][] position = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+
+    /**
+     * @param heights 题目给定的二维数组
+     * @param queue 记录可以到达边界的节点
+     * @param visited 记录这个位置可以到哪条河
+     */
+    public void bfs(int[][] heights, Queue<int[]> queue, boolean[][][] visited) {
+        while (!queue.isEmpty()) {
+            int[] curPos = queue.poll();
+            for (int[] current: position) {
+                int row = curPos[0] + current[0], col = curPos[1] + current[1], sign = curPos[2];
+                // 越界
+                if (row < 0 || row >= heights.length || col < 0 || col >= heights[0].length) continue;
+                // 高度不合适或者已经被访问过了
+                if (heights[row][col] < heights[curPos[0]][curPos[1]] || visited[row][col][sign]) continue;
+                visited[row][col][sign] = true;
+                queue.add(new int[]{row, col, sign});
+            }
+        }
+    }
+
+    public List<List<Integer>> pacificAtlantic(int[][] heights) {
+        int rowSize = heights.length, colSize = heights[0].length;
+        List<List<Integer>> ans = new ArrayList<>();
+        boolean[][][] visited = new boolean[rowSize][colSize][2];
+        // 队列，保存的数据为 [行号, 列号, 标记]
+        // 假设太平洋的标记为 1，大西洋为 0
+        Queue<int[]> queue = new ArrayDeque<>();
+        for (int row = 0; row < rowSize; row++) {
+            visited[row][colSize - 1][0] = true;
+            visited[row][0][1] = true;
+            queue.add(new int[]{row, colSize - 1, 0});
+            queue.add(new int[]{row, 0, 1});
+        }
+        for (int col = 0; col < colSize; col++) {
+            visited[rowSize - 1][col][0] = true;
+            visited[0][col][1] = true;
+            queue.add(new int[]{rowSize - 1, col, 0});
+            queue.add(new int[]{0, col, 1});
+        }
+        bfs(heights, queue, visited);
+        for (int row = 0; row < rowSize; row++) {
+            for (int col = 0; col < colSize; col++) {
+                // 如果该位置即可以到太平洋又可以到大西洋，就放入答案数组
+                if (visited[row][col][0] && visited[row][col][1])
+                    ans.add(List.of(row, col));
+            }
+        }
+        return ans;
+    }
+}
+```
 
 # 剑指offer03-数组中重复的数字
 
@@ -6169,43 +10335,6 @@ class Solution {
 }
 ```
 
-# Leetcode17-[电话号码的字母组合](https://leetcode.cn/problems/letter-combinations-of-a-phone-number/description/)
-
-给定一个仅包含数字 `2-9` 的字符串，返回所有它能表示的字母组合。答案可以按 **任意顺序** 返回。
-
-给出数字到字母的映射如下（与电话按键相同）。注意 1 不对应任何字母。
-
-==回溯==
-
-`时间 O(3^m * 4 ^ n) 空间 O(m + n)` m n分别表示3和4的个数
-
-```java
-class Solution {
-    String[] maps = {"abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
-    List<String> ans = new ArrayList<>();
-    StringBuilder temp = new StringBuilder();
-    public List<String> letterCombinations(String digits) {
-        if (digits == null || digits.length() == 0) {
-            return new ArrayList<String>();
-        }
-        backtrack(digits, 0);
-        return ans;
-    }
-    public void backtrack(String digits, int index) {
-        if (index == digits.length()) {
-            ans.add(temp.toString());
-            return;
-        }
-        String val = maps[digits.charAt(index) - '2'];
-        for (char c : val.toCharArray()) {
-            temp.append(c);
-            backtrack(digits, index + 1);
-            temp.deleteCharAt(temp.length() - 1);
-        }
-    }
-}
-```
-
 # Leetcode19-[删除链表的倒数第 N 个结点](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/description/)
 
 给你一个链表，删除链表的倒数第 `n` 个结点，并且返回链表的头结点。
@@ -7079,85 +11208,6 @@ class Solution {
 }
 ```
 
-# Leetcode[39. 组合总和](https://leetcode.cn/problems/combination-sum/)
-
-给你一个 无重复元素 的整数数组 candidates 和一个目标整数 target ，找出 candidates 中可以使数字和为目标数 target 的 所有 不同组合 ，并以列表形式返回。你可以按 任意顺序 返回这些组合。
-
-candidates 中的 同一个 数字可以 无限制重复被选取 。如果至少一个数字的被选数量不同，则两种组合是不同的。 
-
-对于给定的输入，保证和为 target 的不同组合数少于 150 个。
-
-==回溯不含剪枝==
-
-在深度优先遍历中实现回溯和剪枝
-
-```java
-class Solution {
-    List<List<Integer>> ans = new ArrayList<>();
-    int[] candidates;
-    public List<List<Integer>> combinationSum(int[] candidates, int target) {
-        LinkedList<Integer> combine = new LinkedList<>();
-        this.candidates = candidates;
-        dfs(combine, 0, target);
-        return ans;
-    }
-    public void dfs(LinkedList<Integer> combine, int idx, int target) {
-        if (target == 0) {
-            ans.add((List<Integer>)combine.clone());
-            return;
-        }
-        if (target < 0) {
-            return;
-        }
-        for (int i = idx; i < candidates.length; i++) {
-            combine.add(candidates[i]);
-            dfs(combine, i, target - candidates[i]);
-            combine.removeLast();
-        }
-    }
-}
-```
-
-==回溯+排序+剪枝==
-
-```java
-public class Solution {
-
-    public List<List<Integer>> combinationSum(int[] candidates, int target) {
-        int len = candidates.length;
-        List<List<Integer>> res = new ArrayList<>();
-        if (len == 0) {
-            return res;
-        }
-
-        // 排序是剪枝的前提
-        Arrays.sort(candidates);
-        Deque<Integer> path = new ArrayDeque<>();
-        dfs(candidates, 0, len, target, path, res);
-        return res;
-    }
-
-    private void dfs(int[] candidates, int begin, int len, int target, Deque<Integer> path, List<List<Integer>> res) {
-        // 由于进入更深层的时候，小于 0 的部分被剪枝，因此递归终止条件值只判断等于 0 的情况
-        if (target == 0) {
-            res.add(new ArrayList<>(path));
-            return;
-        }
-
-        for (int i = begin; i < len; i++) {
-            // 重点理解这里剪枝，前提是候选数组已经有序，
-            if (target - candidates[i] < 0) {
-                break;
-            }
-            
-            path.addLast(candidates[i]);
-            dfs(candidates, i, len, target - candidates[i], path, res);
-            path.removeLast();
-        }
-    }
-}
-```
-
 # Leetcode[42. 接雨水](https://leetcode.cn/problems/trapping-rain-water/)
 
 给定 `n` 个非负整数表示每个宽度为 `1` 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
@@ -7275,81 +11325,6 @@ class Solution {
     }
 }
 ```
-
-
-
-# Leetcode[46. 全排列](https://leetcode.cn/problems/permutations/)
-
-给定一个不含重复数字的数组 `nums` ，返回其 *所有可能的全排列* 。你可以 **按任意顺序** 返回答案。
-
-==回溯==
-
-```java
-class Solution {
-    List<List<Integer>> ans = new ArrayList<>();
-    int[] nums;
-    public List<List<Integer>> permute(int[] nums) {
-        this.nums = nums;
-        Deque<Integer> temp = new ArrayDeque<>();
-        dfs(temp, 0);
-        return ans;
-    }
-    public void dfs(Deque<Integer> temp, int idx) {
-        if (idx == nums.length) {
-            ans.add(new ArrayList<>(temp));
-            return;
-        }
-        for (int i = idx; i < nums.length; i++) {
-            temp.add(nums[i]);
-            swap(idx, i);
-            dfs(temp, idx + 1);
-            swap(idx, i);
-            temp.removeLast();
-        }
-    }
-    public void swap(int i, int j) {
-        int temp = nums[i];
-        nums[i] = nums[j];
-        nums[j] = temp;
-    }
-} 
-```
-
-
-
-```java
-class Solution {
-    public List<List<Integer>> permute(int[] nums) {
-        List<List<Integer>> res = new ArrayList<List<Integer>>();
-
-        List<Integer> output = new ArrayList<Integer>();
-        for (int num : nums) {
-            output.add(num);
-        }
-
-        int n = nums.length;
-        backtrack(n, output, res, 0);
-        return res;
-    }
-
-    public void backtrack(int n, List<Integer> output, List<List<Integer>> res, int first) {
-        // 所有数都填完了
-        if (first == n) {
-            res.add(new ArrayList<Integer>(output));
-        }
-        for (int i = first; i < n; i++) {
-            // 动态维护数组
-            Collections.swap(output, first, i);
-            // 继续递归填下一个数
-            backtrack(n, output, res, first + 1);
-            // 撤销操作
-            Collections.swap(output, first, i);
-        }
-    }
-}
-```
-
-
 
 # Leetcode[48. 旋转图像](https://leetcode.cn/problems/rotate-image/)
 
@@ -7473,11 +11448,24 @@ class Solution {
 
 ==快速幂==
 
-
-
-# Leetcode53-[最大子数组和](https://leetcode.cn/problems/maximum-subarray/description/)
-
-同剑指Offer42
+```java
+class Solution {
+    public double myPow(double x, int n) {
+        double res = 1;
+        long b = n;
+        if (b < 0) {
+            x = 1.0 / x;
+            b = -b;
+        }
+        while (b > 0) {
+            if ((b & 1) > 0)res = res * x;
+            x = x * x;
+            b >>= 1;
+        }
+        return res;
+    }
+}
+```
 
 # Leetcode[54. 螺旋矩阵](https://leetcode.cn/problems/spiral-matrix/)
 
@@ -8078,56 +12066,34 @@ class Solution {
 }
 ```
 
-# Leetcode[78. 子集](https://leetcode.cn/problems/subsets/)
-
-给你一个整数数组 `nums` ，数组中的元素 **互不相同** 。返回该数组所有可能的子集（幂集）。
-
-解集 **不能** 包含重复的子集。你可以按 **任意顺序** 返回解集。
-
-==回溯==
-
 ```java
 class Solution {
-    List<List<Integer>> ans = new ArrayList<>();
-    int[] nums;
-    int n;
-    public List<List<Integer>> subsets(int[] nums) {
-        this.nums = nums;
-        n = nums.length;
-        Deque<Integer> tmp = new ArrayDeque<>();
-        backtrack(tmp, 0); 
-        return ans;
-    }
-    private void backtrack(Deque<Integer> tmp, int i) {
-        ans.add(new ArrayList<Integer>(tmp));
-        for (int index = i; index < n; index++) {
-            tmp.add(nums[index]);
-            backtrack(tmp, index + 1);
-            tmp.removeLast();
-        }
-    }
-}
-```
-
-==位运算==
-
-```java
-class Solution {
-    List<Integer> t = new ArrayList<Integer>();
-    List<List<Integer>> ans = new ArrayList<List<Integer>>();
-
-    public List<List<Integer>> subsets(int[] nums) {
-        int n = nums.length;
-        for (int mask = 0; mask < (1 << n); ++mask) {
-            t.clear();
-            for (int i = 0; i < n; ++i) {
-                if ((mask & (1 << i)) != 0) {
-                    t.add(nums[i]);
+    public String minWindow(String s, String t) {
+        int[] pattern = new int[128];
+        int[] match = new int[128];
+        int left = 0, right = 0, minLeft = -1,minRight = -1, cnt = 0, length = s.length() + 1;
+        for (char c : t.toCharArray()) pattern[c]++;
+        for (; right < s.length(); right++) {
+            char c = s.charAt(right);
+            if (pattern[c] == 0) continue;
+            if (match[c] < pattern[c]) cnt++;
+            match[c]++;
+            if (cnt == t.length()) {
+                for (; cnt == t.length(); left++) {
+                    char temp = s.charAt(left);
+                    if (pattern[temp] == 0) continue;
+                    if (match[temp] == pattern[temp]) cnt--;
+                    match[temp]--;  
+                }
+                if (right - left + 2 < length) {
+                    length = right - left + 2;
+                    minLeft = left - 1;
+                    minRight = right;
                 }
             }
-            ans.add(new ArrayList<Integer>(t));
         }
-        return ans;
+        if (minRight < 0) return "";
+        return s.substring(minLeft, minRight + 1);
     }
 }
 ```
@@ -8324,49 +12290,6 @@ class Solution {
     }
 }
 ```
-
-# Leetcode[90. 子集 II](https://leetcode.cn/problems/subsets-ii/)
-
-给你一个整数数组 nums ，其中可能包含重复元素，请你返回该数组所有可能的子集（幂集）。
-
-解集 不能 包含重复的子集。返回的解集中，子集可以按 任意顺序 排列。
-
-==回溯==
-
-```java
-class Solution {
-   List<List<Integer>> result = new ArrayList<>();// 存放符合条件结果的集合
-   LinkedList<Integer> path = new LinkedList<>();// 用来存放符合条件结果
-   boolean[] used;
-    public List<List<Integer>> subsetsWithDup(int[] nums) {
-        if (nums.length == 0){
-            result.add(path);
-            return result;
-        }
-        Arrays.sort(nums);
-        used = new boolean[nums.length];
-        subsetsWithDupHelper(nums, 0);
-        return result;
-    }
-    
-    private void subsetsWithDupHelper(int[] nums, int startIndex){
-        result.add(new ArrayList<>(path));
-
-        for (int i = startIndex; i < nums.length; i++){
-            if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]){
-                continue;
-            }
-            path.add(nums[i]);
-            used[i] = true;
-            subsetsWithDupHelper(nums, i + 1);
-            path.removeLast();
-            used[i] = false;
-        }
-    }
-}
-```
-
-
 
 # Leetcode[96. 不同的二叉搜索树](https://leetcode.cn/problems/unique-binary-search-trees/)
 
@@ -11396,6 +15319,124 @@ class Solution {
 }
 ```
 
+# Leetcode[1483. 树节点的第 K 个祖先](https://leetcode.cn/problems/kth-ancestor-of-a-tree-node/)
+
+给你一棵树，树上有 `n` 个节点，按从 `0` 到 `n-1` 编号。树以父节点数组的形式给出，其中 `parent[i]` 是节点 `i` 的父节点。树的根节点是编号为 `0` 的节点。
+
+树节点的第 *`k`* 个祖先节点是从该节点到根节点路径上的第 `k` 个节点。
+
+实现 `TreeAncestor` 类：
+
+- `TreeAncestor（int n， int[] parent）` 对树和父数组中的节点数初始化对象。
+- `getKthAncestor``(int node, int k)` 返回节点 `node` 的第 `k` 个祖先节点。如果不存在这样的祖先节点，返回 `-1` 。
+
+==树上倍增 位运算== 
+
+```java
+class TreeAncestor {
+    private int[][] pa;
+
+    public TreeAncestor(int n, int[] parent) {
+        int m = 32 - Integer.numberOfLeadingZeros(n); // n 的二进制长度
+        pa = new int[n][m];
+        for (int i = 0; i < n; i++)
+            pa[i][0] = parent[i];
+        for (int i = 0; i < m - 1; i++) {
+            for (int x = 0; x < n; x++) {
+                int p = pa[x][i];
+                pa[x][i + 1] = p < 0 ? -1 : pa[p][i];
+            }
+        }
+    }
+
+    public int getKthAncestor(int node, int k) {
+        int m = 32 - Integer.numberOfLeadingZeros(k); // k 的二进制长度
+        for (int i = 0; i < m; i++) {
+            if (((k >> i) & 1) > 0) { // k 的二进制从低到高第 i 位是 1
+                node = pa[node][i];
+                if (node < 0) break;
+            }
+        }
+        return node;
+    }
+
+    // 另一种写法，不断去掉 k 的最低位的 1
+    public int getKthAncestor2(int node, int k) {
+        for (; k > 0 && node != -1; k &= k - 1)
+            node = pa[node][Integer.numberOfTrailingZeros(k)];
+        return node;
+    }
+}
+```
+
+拓展最近公共祖先(Least Common Ancestors, LCA)模板：
+
+```java
+class TreeAncestor {
+    private int[] depth;
+    private int[][] pa;
+
+    public TreeAncestor(int[][] edges) {
+        int n = edges.length + 1;
+        int m = 32 - Integer.numberOfLeadingZeros(n); // n 的二进制长度
+        List<Integer> g[] = new ArrayList[n];
+        Arrays.setAll(g, e -> new ArrayList<>());
+        for (var e : edges) { // 节点编号从 0 开始
+            int x = e[0], y = e[1];
+            g[x].add(y);
+            g[y].add(x);
+        }
+
+        depth = new int[n];
+        pa = new int[n][m];
+        dfs(g, 0, -1);
+
+        for (int i = 0; i < m - 1; i++) {
+            for (int x = 0; x < n; x++) {
+                int p = pa[x][i];
+                pa[x][i + 1] = p < 0 ? -1 : pa[p][i];
+            }
+        }
+    }
+
+    private void dfs(List<Integer>[] g, int x, int fa) {
+        pa[x][0] = fa;
+        for (int y : g[x]) {
+            if (y != fa) {
+                depth[y] = depth[x] + 1;
+                dfs(g, y, x);
+            }
+        }
+    }
+
+    public int getKthAncestor(int node, int k) {
+        for (; k > 0; k &= k - 1)
+            node = pa[node][Integer.numberOfTrailingZeros(k)];
+        return node;
+    }
+
+    public int getLCA(int x, int y) {
+        if (depth[x] > depth[y]) {
+            int tmp = y;
+            y = x;
+            x = tmp;
+        }
+        // 使 y 和 x 在同一深度
+        y = getKthAncestor(y, depth[y] - depth[x]);
+        if (y == x)
+            return x;
+        for (int i = pa[x].length - 1; i >= 0; i--) {
+            int px = pa[x][i], py = pa[y][i];
+            if (px != py) {
+                x = px;
+                y = py;
+            }
+        }
+        return pa[x][0];
+    }
+}
+```
+
 # Leetcode[2439. 最小化数组中的最大值](https://leetcode.cn/problems/minimize-maximum-of-array/)
 
 ==二分答案 二分查找==
@@ -11426,6 +15467,542 @@ class Solution {
 			else l=limit+1;
 		}
     	return r;
+    }
+}
+```
+
+# Leetcode [2845. 统计趣味子数组的数目](https://leetcode.cn/problems/count-of-interesting-subarrays/)
+
+给你一个下标从 **0** 开始的整数数组 `nums` ，以及整数 `modulo` 和整数 `k` 。
+
+请你找出并统计数组中 **趣味子数组** 的数目。
+
+如果 **子数组** `nums[l..r]` 满足下述条件，则称其为 **趣味子数组** ：
+
+- 在范围 `[l, r]` 内，设 `cnt` 为满足 `nums[i] % modulo == k` 的索引 `i` 的数量。并且 `cnt % modulo == k` 。
+
+以整数形式表示并返回趣味子数组的数目。
+
+**注意：**子数组是数组中的一个连续非空的元素序列。
+
+==前缀和==
+
+```java
+class Solution {
+    public long countInterestingSubarrays(List<Integer> nums, int modulo, int k) {
+        long res = 0;
+        int[] temp = new int[nums.size() + 1];
+        for (int i = 1; i < nums.size() + 1; i++) temp[i] = nums.get(i - 1) % modulo == k ? 1 : 0;
+        Map<Integer, Integer> map = new HashMap<>();
+        map.put(0, 1);
+        for (int i = 1; i < nums.size() + 1; i++) {
+            temp[i] += temp[i - 1];
+            temp[i] %= modulo;
+            res += map.getOrDefault(temp[i] - k, 0);
+            res += map.getOrDefault(temp[i] + modulo - k, 0);
+            map.put(temp[i], map.getOrDefault(temp[i], 0) + 1);
+        }
+        return res;
+    }
+}
+```
+
+# Leetcode[2835. 使子序列的和等于目标的最少操作次数](https://leetcode.cn/problems/minimum-operations-to-form-subsequence-with-target-sum/)
+
+给你一个下标从 **0** 开始的数组 `nums` ，它包含 **非负** 整数，且全部为 `2` 的幂，同时给你一个整数 `target` 。
+
+一次操作中，你必须对数组做以下修改：
+
+- 选择数组中一个元素 `nums[i]` ，满足 `nums[i] > 1` 。
+- 将 `nums[i]` 从数组中删除。
+- 在 `nums` 的 **末尾** 添加 **两个** 数，值都为 `nums[i] / 2` 。
+
+你的目标是让 `nums` 的一个 **子序列** 的元素和等于 `target` ，请你返回达成这一目标的 **最少操作次数** 。如果无法得到这样的子序列，请你返回 `-1` 。
+
+数组中一个 **子序列** 是通过删除原数组中一些元素，并且不改变剩余元素顺序得到的剩余数组。
+
+==位运算 贪心==
+
+```java
+class Solution {
+    public int minOperations(List<Integer> nums, int target) {
+        long sum = 0;
+        long[] cnt = new long[31];
+        for (Integer num : nums) {
+            sum += num;
+            cnt[Integer.numberOfTrailingZeros(num)]++;
+        }
+        if (target > sum) return -1;
+        int ans = 0, i = 0;
+        long s = 0;
+        while ((1L << i) <= target) {
+            s += cnt[i] << i;
+            int mask = (int)((1L << ++i) - 1);
+            if (s >= (target & mask)) continue;
+            ans++;
+            while (cnt[i] == 0) {
+                ans++;
+                i++;
+            }
+        }
+        return ans;
+    }
+}
+```
+
+# Leetcode[2836. 在传球游戏中最大化函数值](https://leetcode.cn/problems/maximize-value-of-function-in-a-ball-passing-game/)
+
+给你一个长度为 `n` 下标从 **0** 开始的整数数组 `receiver` 和一个整数 `k` 。
+
+总共有 `n` 名玩家，玩家 **编号** 互不相同，且为 `[0, n - 1]` 中的整数。这些玩家玩一个传球游戏，`receiver[i]` 表示编号为 `i` 的玩家会传球给编号为 `receiver[i]` 的玩家。玩家可以传球给自己，也就是说 `receiver[i]` 可能等于 `i` 。
+
+你需要从 `n` 名玩家中选择一名玩家作为游戏开始时唯一手中有球的玩家，球会被传 **恰好** `k` 次。
+
+如果选择编号为 `x` 的玩家作为开始玩家，定义函数 `f(x)` 表示从编号为 `x` 的玩家开始，`k` 次传球内所有接触过球玩家的编号之 **和** ，如果有玩家多次触球，则 **累加多次** 。换句话说， `f(x) = x + receiver[x] + receiver[receiver[x]] + ... + receiver(k)[x]` 。
+
+你的任务时选择开始玩家 `x` ，目的是 **最大化** `f(x)` 。
+
+请你返回函数的 **最大值** 。
+
+**注意：**`receiver` 可能含有重复元素。
+
+==树上倍增 位运算==
+
+```java
+class Solution {
+    public long getMaxFunctionValue(List<Integer> receiver, long K) {
+        int n = receiver.size();
+        int m = 64 - Long.numberOfLeadingZeros(K); // K 的二进制长度
+        var pa = new int[m][n];
+        var sum = new long[m][n];
+        for (int i = 0; i < n; i++) {
+            pa[0][i] = receiver.get(i);
+            sum[0][i] = receiver.get(i);
+        }
+        for (int i = 0; i < m - 1; i++) {
+            for (int x = 0; x < n; x++) {
+                int p = pa[i][x];
+                pa[i + 1][x] = pa[i][p];
+                sum[i + 1][x] = sum[i][x] + sum[i][p]; // 合并节点值之和
+            }
+        }
+
+        long ans = 0;
+        for (int i = 0; i < n; i++) {
+            long s = i;
+            int x = i;
+            for (long k = K; k > 0; k &= k - 1) {
+                int ctz = Long.numberOfTrailingZeros(k);
+                s += sum[ctz][x];
+                x = pa[ctz][x];
+            }
+            ans = Math.max(ans, s);
+        }
+        return ans;
+    }
+}
+```
+
+# Leetcode[2846. 边权重均等查询](https://leetcode.cn/problems/minimum-edge-weight-equilibrium-queries-in-a-tree/)
+
+现有一棵由 `n` 个节点组成的无向树，节点按从 `0` 到 `n - 1` 编号。给你一个整数 `n` 和一个长度为 `n - 1` 的二维整数数组 `edges` ，其中 `edges[i] = [ui, vi, wi]` 表示树中存在一条位于节点 `ui` 和节点 `vi` 之间、权重为 `wi` 的边。
+
+另给你一个长度为 `m` 的二维整数数组 `queries` ，其中 `queries[i] = [ai, bi]` 。对于每条查询，请你找出使从 `ai` 到 `bi` 路径上每条边的权重相等所需的 **最小操作次数** 。在一次操作中，你可以选择树上的任意一条边，并将其权重更改为任意值。
+
+**注意：**
+
+- 查询之间 **相互独立** 的，这意味着每条新的查询时，树都会回到 **初始状态** 。
+- 从 `ai` 到 `bi`的路径是一个由 **不同** 节点组成的序列，从节点 `ai` 开始，到节点 `bi` 结束，且序列中相邻的两个节点在树中共享一条边。
+
+返回一个长度为 `m` 的数组 `answer` ，其中 `answer[i]` 是第 `i` 条查询的答案。
+
+==DFS==(会超时)
+
+```java
+class Solution {
+    public int[] minOperationsQueries(int n, int[][] edges, int[][] queries) {
+        int[] res = new int[queries.length];
+        Map<Integer, List<int[]>> map = new HashMap<>();
+        for (int[] edge : edges) {
+            map.computeIfAbsent(edge[0], key -> new ArrayList<>()).add(new int[]{edge[1], edge[2]});
+            map.computeIfAbsent(edge[1], key -> new ArrayList<>()).add(new int[]{edge[0], edge[2]});
+        }
+        for (int i = 0; i < queries.length; i++) {
+            res[i] = dfs(map, queries[i][0], queries[i][1]);
+        }
+        return res;
+    }
+
+    public int dfs(Map<Integer, List<int[]>> map, int start, int end) {
+        HashMap<Integer, Integer> res = new HashMap<>();
+        _dfs(map, start, end, -1, res);
+        int maxNum = 0, sum = 0;
+        for (Map.Entry<Integer, Integer> entry : res.entrySet()) {
+            maxNum = Math.max(maxNum, entry.getValue());
+            sum += entry.getValue();
+        }
+        return sum - maxNum;
+    }
+
+    private boolean _dfs(Map<Integer, List<int[]>> map, int start, int end, int parent, HashMap<Integer, Integer> res) {
+        if (start == end) return true;
+        for (int[] ele : map.get(start)) {
+            if (ele[0] == parent) continue;
+            if (_dfs(map, ele[0], end, start, res)) {
+                res.put(ele[1], res.getOrDefault(ele[1], 0) + 1);
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
+
+==树上倍增 LCA==
+
+```java
+class Solution {
+    public int[] minOperationsQueries(int n, int[][] edges, int[][] queries) {
+        List<int[]>[] g = new ArrayList[n];
+        Arrays.setAll(g, e -> new ArrayList<>());
+        for (var e : edges) {
+            int x = e[0], y = e[1], w = e[2] - 1;
+            g[x].add(new int[]{y, w});
+            g[y].add(new int[]{x, w});
+        }
+
+        int m = 32 - Integer.numberOfLeadingZeros(n); // n 的二进制长度
+        var pa = new int[n][m];
+        for (int i = 0; i < n; i++) {
+            Arrays.fill(pa[i], -1);
+        }
+        var cnt = new int[n][m][26];
+        var depth = new int[n];
+        dfs(0, -1, g, pa, cnt, depth);
+
+        for (int i = 0; i < m - 1; i++) {
+            for (int x = 0; x < n; x++) {
+                int p = pa[x][i];
+                if (p != -1) {
+                    int pp = pa[p][i];
+                    pa[x][i + 1] = pp;
+                    for (int j = 0; j < 26; j++) {
+                        cnt[x][i + 1][j] = cnt[x][i][j] + cnt[p][i][j];
+                    }
+                }
+            }
+        }
+
+        var ans = new int[queries.length];
+        for (int qi = 0; qi < queries.length; qi++) {
+            int x = queries[qi][0], y = queries[qi][1];
+            int pathLen = depth[x] + depth[y];
+            var cw = new int[26];
+            if (depth[x] > depth[y]) {
+                int temp = x;
+                x = y;
+                y = temp;
+            }
+
+            // 让 y 和 x 在同一深度
+            for (int k = depth[y] - depth[x]; k > 0; k &= k - 1) {
+                int i = Integer.numberOfTrailingZeros(k);
+                int p = pa[y][i];
+                for (int j = 0; j < 26; ++j) {
+                    cw[j] += cnt[y][i][j];
+                }
+                y = p;
+            }
+
+            if (y != x) {
+                for (int i = m - 1; i >= 0; i--) {
+                    int px = pa[x][i];
+                    int py = pa[y][i];
+                    if (px != py) {
+                        for (int j = 0; j < 26; j++) {
+                            cw[j] += cnt[x][i][j] + cnt[y][i][j];
+                        }
+                        x = px;
+                        y = py; // x 和 y 同时上跳 2^i 步
+                    }
+                }
+                for (int j = 0; j < 26; j++) {
+                    cw[j] += cnt[x][0][j] + cnt[y][0][j];
+                }
+                x = pa[x][0];
+            }
+
+            int lca = x;
+            pathLen -= depth[lca] * 2;
+            int maxCw = 0;
+            for (int i = 0; i < 26; i++) {
+                maxCw = Math.max(maxCw, cw[i]);
+            }
+            ans[qi] = pathLen - maxCw;
+        }
+        return ans;
+    }
+
+    private void dfs(int x, int fa, List<int[]>[] g, int[][] pa, int[][][] cnt, int[] depth) {
+        pa[x][0] = fa;
+        for (var e : g[x]) {
+            int y = e[0], w = e[1];
+            if (y != fa) {
+                cnt[y][0][w] = 1;
+                depth[y] = depth[x] + 1;
+                dfs(y, x, g, pa, cnt, depth);
+            }
+        }
+    }
+}
+```
+
+# Leetcode[2856. 删除数对后的最小数组长度](https://leetcode.cn/problems/minimum-array-length-after-pair-removals/)
+
+==贪心 二分查找==
+
+```java
+class Solution {
+    public int minLengthAfterRemovals(List<Integer> nums) {
+        int n = nums.size();
+        int x = nums.get(n / 2);
+        int maxCnt = lowerBound(nums, x) - lowerBound(nums, x - 1);
+        return Math.max(maxCnt * 2 - n, n % 2);
+    }
+
+    // 开区间写法
+    private int lowerBound(List<Integer> nums, int target) {
+        int left = 0, right = nums.size() - 1; // 开区间 (left, right)
+        while (left <= right) { // 区间不为空
+            // 循环不变量：
+            // nums[left] < target
+            // nums[right] >= target
+            int mid = left + (right - left) / 2;
+            if (nums.get(mid) <= target)
+                left = mid + 1; // 范围缩小到 (mid, right)
+            else
+                right = mid - 1; // 范围缩小到 (left, mid)
+        }
+        return right; // 或者 left+1
+    }
+}
+```
+
+# Leetcode[2857. 统计距离为 k 的点对](https://leetcode.cn/problems/count-pairs-of-points-with-distance-k/)
+
+==哈希表==
+
+```java
+class Solution {
+    public int countPairs(List<List<Integer>> coordinates, int k) {
+        int ans = 0;
+        var cnt = new HashMap<Long, Integer>();
+        for (var p : coordinates) {
+            int x = p.get(0), y = p.get(1);
+            for (int i = 0; i <= k; i++) {
+                ans += cnt.getOrDefault((x ^ i) * 2000000L + (y ^ (k - i)), 0);
+            }
+            cnt.merge(x * 2000000L + y, 1, Integer::sum);
+        }
+        return ans;
+    }
+}
+```
+
+
+
+# Leetcode[2861. 最大合金数](https://leetcode.cn/problems/maximum-number-of-alloys/)
+
+==二分答案==
+
+```java
+class Solution {
+    public int maxNumberOfAlloys(int n, int k, int budget, List<List<Integer>> composition, List<Integer> stock, List<Integer> cost) {
+        int res = 0;
+        int rightStart = Collections.min(stock) + budget;
+        for (List<Integer> com : composition) {
+            int left = 0, right = rightStart;
+            while (left <= right) {
+                int mid = left + ((right - left) >> 1);
+                if (check(mid, budget, com, stock, cost)) right = mid - 1;
+                else left = mid + 1;
+            }
+            res = Math.max(res, right);
+        }
+        return res;
+    }
+    
+    private boolean check(int mid, int budget, List<Integer> com, List<Integer> stock, List<Integer> cost) {
+        long money = 0;
+        for (int i = 0; i < com.size(); i++) {
+            long temp = com.get(i) * 1L * mid;
+            if (temp > stock.get(i)) money += (temp - stock.get(i)) * cost.get(i);
+        }
+        if (money > budget) return true;
+        return false;
+    }
+}
+```
+
+# Leetcode[2862. 完全子集的最大元素和](https://leetcode.cn/problems/maximum-element-sum-of-a-complete-subset-of-indices/)
+
+```java
+class Solution {
+    public long maximumSum(List<Integer> nums) {
+        int[] a = nums.stream().mapToInt(i -> i).toArray();
+        long res = 0;
+        for (int i = 1; i <= a.length; i++) {
+            long sum = 0;
+            for (int j = 1; i * j * j <= a.length; j++) {
+                sum += a[i * j * j - 1];
+            }
+            res = Math.max(res, sum);
+        }
+        return res;
+    }
+}
+```
+
+# Leetcode[8020. 字符串转换](https://leetcode.cn/problems/string-transformation/)
+
+给你两个长度都为 `n` 的字符串 `s` 和 `t` 。你可以对字符串 `s` 执行以下操作：
+
+- 将 `s` 长度为 `l` （`0 < l < n`）的 **后缀字符串** 删除，并将它添加在 `s` 的开头。
+  比方说，`s = 'abcd'` ，那么一次操作中，你可以删除后缀 `'cd'` ，并将它添加到 `s` 的开头，得到 `s = 'cdab'` 。
+
+给你一个整数 `k` ，请你返回 **恰好** `k` 次操作将 `s` 变为 `t` 的方案数。
+
+由于答案可能很大，返回答案对 `109 + 7` **取余** 后的结果。
+
+==KMP 动态规划 快速幂==
+
+```java
+class Solution {
+    public int numberOfWays(String s, String t, long k) {
+        int n = s.length();
+        int c = kmpSearch(s + s.substring(0, n - 1), t);
+        long[][] m = {
+            {c - 1, c},
+            {n - c, n - 1 - c},
+        };
+        m = pow(m, k);
+        return s.equals(t) ? (int) m[0][0] : (int) m[0][1];
+    }
+
+    private int[] calcMaxMatch(String s) {
+        int[] match = new int[s.length()];
+        int c = 0;
+        for (int i = 1; i < s.length(); i++) {
+            char v = s.charAt(i);
+            while (c > 0 && s.charAt(c) != v) {
+                c = match[c - 1];
+            }
+            if (s.charAt(c) == v) {
+                c++;
+            }
+            match[i] = c;
+        }
+        return match;
+    }
+
+    private int kmpSearch(String text, String pattern) {
+        int[] match = calcMaxMatch(pattern);
+        int lenP = pattern.length();
+        int c = 0;
+        int matchCnt = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char v = text.charAt(i);
+            while (c > 0 && pattern.charAt(c) != v) {
+                c = match[c - 1];
+            }
+            if (pattern.charAt(c) == v) {
+                c++;
+            }
+            if (c == lenP) {
+                matchCnt++;
+                c = match[c - 1];
+            }
+        }
+        return matchCnt;
+    }
+
+    private static final long MOD = (long) 1e9 + 7;
+
+    private long[][] multiply(long[][] a, long[][] b) {
+        long[][] c = new long[2][2];
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                c[i][j] = (a[i][0] * b[0][j] + a[i][1] * b[1][j]) % MOD;
+            }
+        }
+        return c;
+    }
+
+    private long[][] pow(long[][] a, long n) {
+        long[][] res = {{1, 0}, {0, 1}};
+        for (; n > 0; n /= 2) {
+            if (n % 2 > 0) {
+                res = multiply(res, a);
+            }
+            a = multiply(a, a);
+        }
+        return res;
+    }
+}
+```
+
+
+
+# Leetcode[100030. 将石头分散到网格图的最少移动次数](https://leetcode.cn/problems/minimum-moves-to-spread-stones-over-grid/)
+
+给你一个大小为 `3 * 3` ，下标从 **0** 开始的二维整数矩阵 `grid` ，分别表示每一个格子里石头的数目。网格图中总共恰好有 `9` 个石头，一个格子里可能会有 **多个** 石头。
+
+每一次操作中，你可以将一个石头从它当前所在格子移动到一个至少有一条公共边的相邻格子。
+
+请你返回每个格子恰好有一个石头的 **最少移动次数** 。
+
+==枚举 DFS 回溯==
+
+```java
+class Solution {
+    int ans=Integer.MAX_VALUE;
+    int[][] grid;
+    public int minimumMoves(int[][] grid) {
+        this.grid=grid;
+        int cnt=0;
+        for(int i=0;i<3;i++){
+            for(int j=0;j<3;j++){
+                if(grid[i][j]==0){
+                    cnt++;
+                }
+            }
+        }
+        dfs(0,cnt);
+        return ans;
+    }
+    //sum记录移动方案对应的移动次数
+    //cnt记录剩余石头数为0的格子数
+    private void dfs(int sum,int cnt){
+        if(cnt==0){
+            ans=Math.min(sum,ans);
+        }
+        for(int i=0;i<3;i++){
+            for(int j=0;j<3;j++){
+                if(grid[i][j]==0){
+                    for(int k=0;k<3;k++){
+                        for(int l=0;l<3;l++){
+                            if(grid[k][l]>1){
+                                grid[k][l]--;
+                                grid[i][j]=1;
+                                dfs(sum+Math.abs(i-k)+Math.abs(j-l),cnt-1);
+                                grid[k][l]++;
+                                grid[i][j]=0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 ```
@@ -12645,3 +17222,4 @@ class Solution {
 
 
 
+ 
